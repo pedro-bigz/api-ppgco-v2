@@ -1,1 +1,1 @@
-export * from './default.api';
+export * from './storage.api';

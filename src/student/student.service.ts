@@ -51,12 +51,6 @@ export class StudentService {
       password,
     });
 
-    console.log(user);
-    console.log({
-      ...studentDto,
-      user_id: user.dataValues.id,
-    });
-
     return this.studentModel.create({
       ...studentDto,
       user_id: user.dataValues.id,

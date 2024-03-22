@@ -5,6 +5,7 @@ import {
   Get,
   InternalServerErrorException,
   Param,
+  Patch,
   Post,
   Query,
 } from '@nestjs/common';
@@ -45,7 +46,7 @@ export class StudentController {
     return this.studentService.create(createStudentDto);
   }
 
-  @Post('/:id')
+  @Patch(':id')
   public async update(
     @Param('id') id: string,
     @Body(new ZodValidationPipe(updateStudentSchema))

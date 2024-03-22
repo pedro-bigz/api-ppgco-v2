@@ -6,12 +6,13 @@ export const getCompiler = (props: object) => {
       `
 import {
   Body,
-  Controller,
-  Delete,
-  Get,
-  Param,
-  Post,
   Query,
+  Param,
+  Get,
+  Patch,
+  Post,
+  Delete,
+  Controller,
 } from '@nestjs/common';
 import { <%= service.className %> } from './<%= service.path %>';
 import {
@@ -50,7 +51,7 @@ export class <%= controllerClassName %> {
     return this.<%= service.name %>.create(<%= dto.create.name %>);
   }
 
-  @Post('/:id')
+  @Patch(':id')
   public update(
     @Param('id') id: string,
     @Body(new ZodValidationPipe(<%= schema.update %>))
@@ -59,7 +60,7 @@ export class <%= controllerClassName %> {
     return this.<%= service.name %>.update(+id, <%= dto.update.name %>);
   }
 
-  @Delete('/:id')
+  @Delete(':id')
   public destroy(@Param('id') id: string) {
     return this.<%= service.name %>.remove(+id);
   }

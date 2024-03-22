@@ -4,16 +4,18 @@ import {
   CreatedAt,
   DeletedAt,
   ForeignKey,
+  HasOne,
   Model,
   Scopes,
   Table,
   UpdatedAt,
 } from 'sequelize-typescript';
 import { User } from '@app/user';
+import { Project } from '@app/project';
 
 @Scopes(() => ({
   full: {
-    include: [User],
+    include: [User, Project],
   },
 }))
 @Table({ tableName: 'student' })
@@ -51,4 +53,7 @@ export class Student extends Model {
 
   @BelongsTo(() => User)
   user: User;
+
+  @HasOne(() => Project)
+  project: Project;
 }

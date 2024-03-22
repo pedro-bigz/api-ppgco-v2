@@ -1,5 +1,6 @@
 export interface ColumnInfoType {
   COLUMN_NAME: string;
+  COLUMN_KEY: string;
   DATA_TYPE: string;
   UDT_NAME: string;
   COLUMN_DEFAULT: string;

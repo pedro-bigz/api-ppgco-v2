@@ -10,7 +10,7 @@ import {
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { ZodValidationPipe } from 'core';
-import { loginSchema } from './dto';
+import { LoginDto, loginSchema } from './dto';
 import { Public } from './auth.decorator';
 
 @Controller('auth')
@@ -21,7 +21,7 @@ export class AuthController {
   @HttpCode(HttpStatus.OK)
   @Post('login')
   @UsePipes(new ZodValidationPipe(loginSchema))
-  public signIn(@Body() { email, password }: Record<string, any>) {
+  public signIn(@Body() { email, password }: LoginDto) {
     return this.authService.signIn(email, password);
   }
 

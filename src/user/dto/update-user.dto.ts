@@ -1,3 +1,4 @@
+import { ApiProperty } from '@nestjs/swagger';
 import { z } from 'zod';
 
 export const updateUserSchema = z.object({
@@ -7,4 +8,18 @@ export const updateUserSchema = z.object({
   password: z.string(),
 });
 
-export type UpdateUserDto = Partial<z.infer<typeof updateUserSchema>>;
+// export type UpdateUserDto = Partial<z.infer<typeof updateUserSchema>>;
+
+export class UpdateUserDto {
+  @ApiProperty()
+  first_name?: string;
+
+  @ApiProperty()
+  last_name?: string;
+
+  @ApiProperty()
+  email?: string;
+
+  @ApiProperty()
+  password?: string;
+}

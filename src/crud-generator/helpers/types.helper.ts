@@ -35,7 +35,6 @@ export class TypesHelper {
   }
 
   private columnDataResolver(column: ColumnInfoType) {
-    console.log(column);
     const name = column.COLUMN_NAME;
     const maxLength = column.CHARACTER_MAXIMUM_LENGTH;
     const type = this.columnTypeResolver(column.DATA_TYPE);
@@ -69,7 +68,9 @@ export class TypesHelper {
 
   private isPKeyColumn(columnData: ColumnInfoType) {
     return (
-      columnData.COLUMN_NAME === 'id' || columnData.EXTRA === 'auto_increment'
+      columnData.COLUMN_NAME === 'id' ||
+      columnData.COLUMN_KEY === 'PRI' ||
+      columnData.EXTRA === 'auto_increment'
     );
   }
 

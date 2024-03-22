@@ -43,7 +43,6 @@ export class DtoUpdateGenerator extends BaseGenerator {
       ),
       imports: this.zodHelper.getImports(),
       setImportString(imports: string[]) {
-        console.log(imports);
         return imports.length
           ? `import { ${imports.join(', ')} } from 'utils';`
           : ``;

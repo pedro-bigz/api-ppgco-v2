@@ -45,7 +45,7 @@ export class <%= serviceClassName %> {
   }
 
   public create(<%= dto.create.name %>: <%= dto.create.type %>) {
-    return this.<%= model.name %>.create(<%= dto.create.name %>);
+    return this.<%= model.name %>.create({ ...<%= dto.create.name %> });
   }
 
   public update(<%= primaryKey.name %>: <%= primaryKey.type %>, <%= dto.update.name %>: <%= dto.update.type %>) {
