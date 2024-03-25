@@ -1,4 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
+import { customCreateZodDto } from 'core';
 import { z } from 'zod';
 
 export const loginSchema = z.object({
@@ -6,10 +7,4 @@ export const loginSchema = z.object({
   password: z.string(),
 });
 
-export class LoginDto {
-  @ApiProperty({ required: false })
-  email: string;
-
-  @ApiProperty({ required: false })
-  password: string;
-}
+export class LoginDto extends customCreateZodDto(loginSchema) {}

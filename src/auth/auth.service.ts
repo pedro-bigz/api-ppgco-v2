@@ -1,4 +1,5 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcryptjs';
 
@@ -11,13 +12,12 @@ type TokenType = {
   nome: string;
 };
 
-const env = ENV();
-
 @Injectable()
 export class AuthService {
   public constructor(
     private readonly usersService: UserService,
-    private jwtService: JwtService,
+    private readonly jwtService: JwtService,
+    private readonly configService: ConfigService,
   ) {}
 
   public async signIn(email: string, password: string): Promise<any> {
@@ -45,12 +45,12 @@ export class AuthService {
 
     const accessToken = await this.jwtService.signAsync(payload, {
       expiresIn: '4h',
-      secret: env.JWT_SECRET_KEY,
+      secret: this.configService.get<string>('JWT_SECRET_KEY'),
     });
 
     const refreshToken = await this.jwtService.signAsync(payload, {
       expiresIn: '1d',
-      secret: env.JWT_REFRESH_SECRET_KEY,
+      secret: this.configService.get<string>('JWT_REFRESH_SECRET_KEY'),
     });
 
     return {
@@ -86,9 +86,9 @@ export class AuthService {
   public async refresh(requestBody: any) {
     const token = requestBody.refreshToken;
 
-    const { _id, email } = (await this.jwtService.verifyAsync(token, {
-      secret: env.JWT_SECRET_KEY,
-    })) as TokenType;
+    const { _id, email } = await this.jwtService.verifyAsync<TokenType>(token, {
+      secret: this.configService.get<string>('JWT_SECRET_KEY'),
+    });
 
     const payload = {
       _id,
@@ -97,8 +97,14 @@ export class AuthService {
 
     const accessToken = await this.jwtService.signAsync(payload, {
       expiresIn: '4h',
-      secret: env.JWT_SECRET_KEY,
+      secret: this.configService.get<string>('JWT_SECRET_KEY'),
     });
-    return { auth: { accessToken } };
+
+    const refreshToken = await this.jwtService.signAsync(payload, {
+      expiresIn: '4h',
+      secret: this.configService.get<string>('JWT_SECRET_KEY'),
+    });
+
+    return { auth: { accessToken, refreshToken } };
   }
 }

@@ -1,17 +1,23 @@
 import {
   AfterCreate,
+  BelongsToMany,
   Column,
   CreatedAt,
+  DefaultScope,
   DeletedAt,
   Model,
-  PrimaryKey,
+  Scopes,
   Table,
   UpdatedAt,
 } from 'sequelize-typescript';
+import { Role } from '@app/roles';
+import { UserHasRole } from '@app/user-has-roles';
 
+@DefaultScope(() => ({
+  include: [Role],
+}))
 @Table({ tableName: 'users' })
 export class User extends Model {
-  // @PrimaryKey
   @Column({ primaryKey: true, autoIncrement: true })
   id: number;
 
@@ -47,6 +53,9 @@ export class User extends Model {
 
   @DeletedAt
   deleted_at: Date;
+
+  @BelongsToMany(() => Role, () => UserHasRole)
+  roles: Role[];
 
   @AfterCreate
   static sendVerificationEmail(instance: User) {

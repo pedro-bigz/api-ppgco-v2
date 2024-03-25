@@ -1,13 +1,5 @@
-import {
-  Body,
-  Query,
-  Param,
-  Get,
-  Patch,
-  Post,
-  Delete,
-  Controller,
-} from '@nestjs/common';
+import { Body, Query, Param, Get, Patch, Post, Delete } from '@nestjs/common';
+import { ZodValidationPipe, SwaggerSafeController } from 'core';
 import { PublicationService } from './publication.service';
 import {
   CreatePublicationDto,
@@ -15,13 +7,15 @@ import {
   createPublicationSchema,
   updatePublicationSchema,
 } from './dto';
-import { ZodValidationPipe } from 'core';
+import { Can } from '@app/permissions';
+import { Permissions } from './publication.enum';
 
-@Controller('publication')
+@SwaggerSafeController('publication')
 export class PublicationController {
   public constructor(private readonly publicationService: PublicationService) {}
 
   @Get()
+  @Can(Permissions.List)
   public findAll(
     @Query('page') page: string,
     @Query('perPage') perPage: string,
@@ -29,15 +23,23 @@ export class PublicationController {
     @Query('searchIn') searchIn: string,
     @Query('order') order: Record<string, 'ASC' | 'DESC'>,
   ) {
-    return this.publicationService.find(+page, +perPage, search, searchIn, order);
+    return this.publicationService.find(
+      +page,
+      +perPage,
+      search,
+      searchIn,
+      order,
+    );
   }
 
   @Get(':id')
+  @Can(Permissions.Index)
   public findOne(@Param('id') id: string) {
     return this.publicationService.findOne(+id);
   }
 
   @Post()
+  @Can(Permissions.Create)
   public create(
     @Body(new ZodValidationPipe(createPublicationSchema))
     createPublicationDto: CreatePublicationDto,
@@ -46,6 +48,7 @@ export class PublicationController {
   }
 
   @Patch(':id')
+  @Can(Permissions.Update)
   public update(
     @Param('id') id: string,
     @Body(new ZodValidationPipe(updatePublicationSchema))
@@ -55,6 +58,7 @@ export class PublicationController {
   }
 
   @Delete(':id')
+  @Can(Permissions.Delete)
   public destroy(@Param('id') id: string) {
     return this.publicationService.remove(+id);
   }

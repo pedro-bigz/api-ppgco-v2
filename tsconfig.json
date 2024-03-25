@@ -7,7 +7,7 @@
     "emitDecoratorMetadata": true,
     "experimentalDecorators": true,
     "allowSyntheticDefaultImports": true,
-    "target": "ES6",
+    "target": "es2021",
     "sourceMap": true,
     "outDir": "./dist",
     "baseUrl": "./",
@@ -20,7 +20,7 @@
     "noFallthroughCasesInSwitch": false,
     "paths": {
       "@app/*": ["./src/*"],
-      "@dist/*": ["./dist/*"],
+      "@dist/*": ["./dist/*"]
       // "@storage/*": ["./storage/*"]
     }
   },

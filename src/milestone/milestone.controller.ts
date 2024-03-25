@@ -1,13 +1,5 @@
-import {
-  Body,
-  Controller,
-  Delete,
-  Get,
-  Param,
-  Patch,
-  Post,
-  Query,
-} from '@nestjs/common';
+import { Body, Delete, Get, Param, Patch, Post, Query } from '@nestjs/common';
+import { ZodValidationPipe, SwaggerSafeController } from 'core';
 import { MilestoneService } from './milestone.service';
 import {
   CreateMilestoneDto,
@@ -15,13 +7,15 @@ import {
   createMilestoneSchema,
   updateMilestoneSchema,
 } from './dto';
-import { ZodValidationPipe } from 'core';
+import { Can } from '@app/permissions';
+import { Permissions } from './milestone.enum';
 
-@Controller('milestone')
+@SwaggerSafeController('milestone')
 export class MilestoneController {
   public constructor(private readonly milestoneService: MilestoneService) {}
 
   @Get()
+  @Can(Permissions.List)
   public findAll(
     @Query('page') page: string,
     @Query('perPage') perPage: string,
@@ -33,11 +27,13 @@ export class MilestoneController {
   }
 
   @Get(':id')
+  @Can(Permissions.Index)
   public findOne(@Param('id') id: string) {
     return this.milestoneService.findOne(+id);
   }
 
   @Post(':projectId/new')
+  @Can(Permissions.Create)
   public create(
     @Param('projectId') projectId: string,
     @Body(new ZodValidationPipe(createMilestoneSchema))
@@ -47,6 +43,7 @@ export class MilestoneController {
   }
 
   @Patch(':id')
+  @Can(Permissions.Update)
   public update(
     @Param('id') id: string,
     @Body(new ZodValidationPipe(updateMilestoneSchema))
@@ -56,6 +53,7 @@ export class MilestoneController {
   }
 
   @Delete('/:id')
+  @Can(Permissions.Delete)
   public destroy(@Param('id') id: string) {
     return this.milestoneService.remove(+id);
   }

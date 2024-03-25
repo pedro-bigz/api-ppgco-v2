@@ -29,6 +29,14 @@ import {
   ProjectHasCoadvisorModule,
   ProjectHasCoadvisor,
 } from './project-has-coadvisor';
+import { StorageModule } from './storage/storage.module';
+import { RolesModule, Role } from './roles';
+import { UserHasRolesModule, UserHasRole } from './user-has-roles';
+import {
+  RoleHasPermissionsModule,
+  RoleHasPermission,
+} from './role-has-permissions';
+import { PermissionsModule, Permission } from './permissions';
 // {IMPORTS} Don't delete me, I'm used for automatic code generation
 
 const env = ENV();
@@ -46,6 +54,10 @@ const orm = {
     Publication,
     PublicationProject,
     ProjectHasCoadvisor,
+    Role,
+    UserHasRole,
+    RoleHasPermission,
+    Permission,
     // {MODELS} Don't delete me, I'm used for automatic code generation
   ],
   views: [],
@@ -78,6 +90,11 @@ const orm = {
     PublicationModule,
     PublicationProjectModule,
     ProjectHasCoadvisorModule,
+    StorageModule,
+    RolesModule,
+    UserHasRolesModule,
+    RoleHasPermissionsModule,
+    PermissionsModule,
     // {MODULE} Don't delete me, I'm used for automatic code generation
   ],
   controllers: [AuthController],

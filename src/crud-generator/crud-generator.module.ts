@@ -27,9 +27,15 @@ import {
   ModelFolderGenerator,
   DtoFolderGenerator,
 } from './generators';
+import { PermissionsModule } from '@app/permissions';
+import { RoleHasPermissionsModule } from '@app/role-has-permissions';
 
 @Module({
-  imports: [SequelizeModule.forFeature()],
+  imports: [
+    SequelizeModule.forFeature(),
+    PermissionsModule,
+    RoleHasPermissionsModule,
+  ],
   exports: [
     CrudGeneratorService,
     ZodHelper,

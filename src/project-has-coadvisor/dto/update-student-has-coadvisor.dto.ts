@@ -1,6 +1,7 @@
 import { z } from 'zod';
 import { ApiProperty } from '@nestjs/swagger';
 import { isValid, toIsoString } from 'utils';
+import { customCreateZodDto } from 'core';
 
 export const updateProjectHasCoadvisorSchema = z.object({
   student_id: z.number(),
@@ -11,13 +12,6 @@ export const updateProjectHasCoadvisorSchema = z.object({
     .transform(toIsoString),
 });
 
-export class UpdateProjectHasCoadvisorDto {
-  @ApiProperty({ required: true })
-  student_id: number;
-
-  @ApiProperty({ required: true })
-  advisor_id: number;
-
-  @ApiProperty()
-  start_date: Date;
-}
+export class UpdateProjectHasCoadvisorDto extends customCreateZodDto(
+  updateProjectHasCoadvisorSchema,
+) {}

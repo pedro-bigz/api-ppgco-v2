@@ -1,6 +1,7 @@
 import { z } from 'zod';
 import { ApiProperty } from '@nestjs/swagger';
 import { isValid, toIsoString } from 'utils';
+import { customCreateZodDto } from 'core';
 
 export const updatePublicationSchema = z.object({
   title: z.string().max(255),
@@ -15,16 +16,6 @@ export const updatePublicationSchema = z.object({
     .transform(toIsoString),
 });
 
-export class UpdatePublicationDto {
-  @ApiProperty({ required: true })
-  title: string;
-
-  @ApiProperty({ required: true })
-  vehicle_name: string;
-
-  @ApiProperty()
-  start_date: Date;
-
-  @ApiProperty()
-  end_date: Date;
-}
+export class UpdatePublicationDto extends customCreateZodDto(
+  updatePublicationSchema,
+) {}

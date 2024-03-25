@@ -1,13 +1,5 @@
-import {
-  Body,
-  Query,
-  Param,
-  Get,
-  Patch,
-  Post,
-  Delete,
-  Controller,
-} from '@nestjs/common';
+import { Body, Query, Param, Get, Patch, Post, Delete } from '@nestjs/common';
+import { ZodValidationPipe, SwaggerSafeController } from 'core';
 import { ResearchLineService } from './research-line.service';
 import {
   CreateResearchLineDto,
@@ -15,13 +7,16 @@ import {
   createResearchLineSchema,
   updateResearchLineSchema,
 } from './dto';
-import { ZodValidationPipe } from 'core';
+import { Can } from '@app/permissions';
 
-@Controller('research-line')
+@SwaggerSafeController('research-line')
 export class ResearchLineController {
-  public constructor(private readonly researchLineService: ResearchLineService) {}
+  public constructor(
+    private readonly researchLineService: ResearchLineService,
+  ) {}
 
   @Get()
+  @Can('research-line.list')
   public findAll(
     @Query('page') page: string,
     @Query('perPage') perPage: string,
@@ -29,15 +24,23 @@ export class ResearchLineController {
     @Query('searchIn') searchIn: string,
     @Query('order') order: Record<string, 'ASC' | 'DESC'>,
   ) {
-    return this.researchLineService.find(+page, +perPage, search, searchIn, order);
+    return this.researchLineService.find(
+      +page,
+      +perPage,
+      search,
+      searchIn,
+      order,
+    );
   }
 
   @Get(':id')
+  @Can('research-line.index')
   public findOne(@Param('id') id: string) {
     return this.researchLineService.findOne(+id);
   }
 
   @Post()
+  @Can('research-line.create')
   public create(
     @Body(new ZodValidationPipe(createResearchLineSchema))
     createResearchLineDto: CreateResearchLineDto,
@@ -46,6 +49,7 @@ export class ResearchLineController {
   }
 
   @Patch(':id')
+  @Can('research-line.update')
   public update(
     @Param('id') id: string,
     @Body(new ZodValidationPipe(updateResearchLineSchema))
@@ -55,6 +59,7 @@ export class ResearchLineController {
   }
 
   @Delete(':id')
+  @Can('research-line.delete')
   public destroy(@Param('id') id: string) {
     return this.researchLineService.remove(+id);
   }

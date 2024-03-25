@@ -1,7 +1,6 @@
 import { z } from 'zod';
-import { ApiProperty } from '@nestjs/swagger';
 import { isValid, toIsoString } from 'utils';
-import { DisconnectedStudentReason } from '../entities';
+import { customCreateZodDto } from 'core';
 
 export const createDisconnectedStudentSchema = z.object({
   reason: z
@@ -14,10 +13,6 @@ export const createDisconnectedStudentSchema = z.object({
     .transform(toIsoString),
 });
 
-export class CreateDisconnectedStudentDto {
-  @ApiProperty()
-  reason: DisconnectedStudentReason;
-
-  @ApiProperty()
-  termination_date: Date;
-}
+export class CreateDisconnectedStudentDto extends customCreateZodDto(
+  createDisconnectedStudentSchema,
+) {}

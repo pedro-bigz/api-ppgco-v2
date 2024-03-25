@@ -1,13 +1,5 @@
-import {
-  Body,
-  Query,
-  Param,
-  Get,
-  Patch,
-  Post,
-  Delete,
-  Controller,
-} from '@nestjs/common';
+import { Body, Query, Param, Get, Patch, Post, Delete } from '@nestjs/common';
+import { ZodValidationPipe, SwaggerSafeController } from 'core';
 import { AdvisorService } from './advisor.service';
 import {
   CreateAdvisorDto,
@@ -15,13 +7,15 @@ import {
   createAdvisorSchema,
   updateAdvisorSchema,
 } from './dto';
-import { ZodValidationPipe } from 'core';
+import { Can } from '@app/permissions';
+import { Permissions } from './advisor.enum';
 
-@Controller('advisor')
+@SwaggerSafeController('advisor')
 export class AdvisorController {
   public constructor(private readonly advisorService: AdvisorService) {}
 
   @Get()
+  @Can(Permissions.List)
   public findAll(
     @Query('page') page: string,
     @Query('perPage') perPage: string,
@@ -33,11 +27,13 @@ export class AdvisorController {
   }
 
   @Get(':id')
+  @Can(Permissions.Index)
   public findOne(@Param('id') id: string) {
     return this.advisorService.findOne(+id);
   }
 
   @Post()
+  @Can(Permissions.Create)
   public create(
     @Body(new ZodValidationPipe(createAdvisorSchema))
     createAdvisorDto: CreateAdvisorDto,
@@ -46,6 +42,7 @@ export class AdvisorController {
   }
 
   @Patch(':id')
+  @Can(Permissions.Update)
   public update(
     @Param('id') id: string,
     @Body(new ZodValidationPipe(updateAdvisorSchema))
@@ -55,6 +52,7 @@ export class AdvisorController {
   }
 
   @Delete(':id')
+  @Can(Permissions.Delete)
   public destroy(@Param('id') id: string) {
     return this.advisorService.remove(+id);
   }

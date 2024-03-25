@@ -1,6 +1,7 @@
 import { z } from 'zod';
 import { ApiProperty } from '@nestjs/swagger';
 import { isValid, toIsoString } from 'utils';
+import { customCreateZodDto } from 'core';
 
 export const createProjectSchema = z.object({
   title: z.string().max(255),
@@ -18,25 +19,4 @@ export const createProjectSchema = z.object({
   advisor_id: z.number(),
 });
 
-export class CreateProjectDto {
-  @ApiProperty({ required: true })
-  title: string;
-
-  @ApiProperty()
-  start_date: Date;
-
-  @ApiProperty()
-  end_date: Date;
-
-  @ApiProperty()
-  category: string;
-
-  @ApiProperty({ required: true })
-  research_line_id: number;
-
-  @ApiProperty({ required: true })
-  student_id: number;
-
-  @ApiProperty({ required: true })
-  advisor_id: number;
-}
+export class CreateProjectDto extends customCreateZodDto(createProjectSchema) {}

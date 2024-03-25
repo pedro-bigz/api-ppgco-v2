@@ -1,6 +1,5 @@
 import {
   Body,
-  Controller,
   Post,
   HttpCode,
   HttpStatus,
@@ -8,12 +7,12 @@ import {
   Get,
   Request,
 } from '@nestjs/common';
+import { ZodValidationPipe, SwaggerSafeController } from 'core';
 import { AuthService } from './auth.service';
-import { ZodValidationPipe } from 'core';
 import { LoginDto, loginSchema } from './dto';
 import { Public } from './auth.decorator';
 
-@Controller('auth')
+@SwaggerSafeController('auth')
 export class AuthController {
   constructor(private authService: AuthService) {}
 

@@ -6,6 +6,7 @@ import {
   CreateMilestoneDocumentDto,
   createMilestoneDocumentSchema,
 } from '@app/milestone-document';
+import { customCreateZodDto } from 'core';
 
 export const createMilestoneSchema = z.object({
   description: z.string().max(1024).optional(),
@@ -20,25 +21,6 @@ export const createMilestoneSchema = z.object({
   document: createMilestoneDocumentSchema.optional(),
 });
 
-export class CreateMilestoneDto {
-  @ApiProperty()
-  description: string;
-
-  @ApiProperty()
-  expected_date: string;
-
-  @ApiProperty()
-  meeting_collegiate: string;
-
-  @ApiProperty()
-  process_number_sei: string;
-
-  @ApiProperty()
-  need_document: string;
-
-  @ApiProperty()
-  situation: MilestoneSituation;
-
-  @ApiPropertyOptional()
-  document?: CreateMilestoneDocumentDto;
-}
+export class CreateMilestoneDto extends customCreateZodDto(
+  createMilestoneSchema,
+) {}

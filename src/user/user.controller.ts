@@ -1,17 +1,9 @@
-import {
-  Controller,
-  Get,
-  Post,
-  Body,
-  Patch,
-  Param,
-  Delete,
-} from '@nestjs/common';
+import { Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { SwaggerSafeController } from 'core';
 import { UserService } from './user.service';
-import { CreateUserDto } from './dto/create-user.dto';
-import { UpdateUserDto } from './dto/update-user.dto';
+import { CreateUserDto, UpdateUserDto } from './dto';
 
-@Controller('user')
+@SwaggerSafeController('user')
 export class UserController {
   public constructor(private readonly userService: UserService) {}
 

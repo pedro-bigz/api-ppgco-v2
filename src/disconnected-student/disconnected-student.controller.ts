@@ -1,27 +1,21 @@
-import {
-  Body,
-  Query,
-  Param,
-  Get,
-  Patch,
-  Post,
-  Delete,
-  Controller,
-} from '@nestjs/common';
+import { Body, Query, Param, Get, Post } from '@nestjs/common';
+import { ZodValidationPipe, SwaggerSafeController } from 'core';
 import { DisconnectedStudentService } from './disconnected-student.service';
 import {
   CreateDisconnectedStudentDto,
   createDisconnectedStudentSchema,
 } from './dto';
-import { ZodValidationPipe } from 'core';
+import { Can } from '@app/permissions';
+import { Permissions } from './disconnected-student.enum';
 
-@Controller('disconnect-student')
+@SwaggerSafeController('disconnect-student')
 export class DisconnectedStudentController {
   public constructor(
     private readonly disconnectedStudentService: DisconnectedStudentService,
   ) {}
 
   @Get()
+  @Can(Permissions.List)
   public findAll(
     @Query('page') page: string,
     @Query('perPage') perPage: string,
@@ -39,11 +33,13 @@ export class DisconnectedStudentController {
   }
 
   @Get(':id')
+  @Can(Permissions.Index)
   public findOne(@Param('id') id: string) {
     return this.disconnectedStudentService.findOne(+id);
   }
 
   @Post(':studentId')
+  @Can(Permissions.Create)
   public disconnectStudent(
     @Param('studentId') studentId: string,
     @Body(new ZodValidationPipe(createDisconnectedStudentSchema))

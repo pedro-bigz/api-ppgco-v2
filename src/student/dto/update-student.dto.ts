@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import { isValid, toIsoString } from 'utils';
-import { ApiProperty } from '@nestjs/swagger';
+import { customCreateZodDto } from 'core';
 
 export const updateStudentSchema = z.object({
   registration: z.string().max(50),
@@ -17,31 +17,4 @@ export const updateStudentSchema = z.object({
   password: z.string(),
 });
 
-export class UpdateStudentDto {
-  @ApiProperty()
-  registration: string;
-
-  @ApiProperty()
-  lattes: string;
-
-  @ApiProperty()
-  scholarship: string;
-
-  @ApiProperty()
-  entry_date: string;
-
-  @ApiProperty()
-  sucupira_date: string;
-
-  @ApiProperty()
-  first_name: string;
-
-  @ApiProperty()
-  last_name: string;
-
-  @ApiProperty()
-  email: string;
-
-  @ApiProperty()
-  password: string;
-}
+export class UpdateStudentDto extends customCreateZodDto(updateStudentSchema) {}

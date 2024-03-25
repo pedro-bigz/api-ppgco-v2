@@ -3,6 +3,7 @@ import { isValid, toIsoString } from 'utils';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { MilestoneSituation } from '../entities';
 import { updateMilestoneDocumentSchema } from '@app/milestone-document';
+import { customCreateZodDto } from 'core';
 
 export const updateMilestoneSchema = z.object({
   description: z.string().max(1024).optional(),
@@ -17,28 +18,6 @@ export const updateMilestoneSchema = z.object({
   document: updateMilestoneDocumentSchema.optional(),
 });
 
-export class UpdateMilestoneDto {
-  @ApiProperty()
-  description: string;
-
-  @ApiProperty()
-  expected_date: string;
-
-  @ApiProperty()
-  meeting_collegiate: string;
-
-  @ApiProperty()
-  process_number_sei: string;
-
-  @ApiProperty()
-  need_document: boolean;
-
-  @ApiProperty()
-  situation: MilestoneSituation;
-
-  @ApiPropertyOptional()
-  document?: {
-    doc_name: string;
-    description: string;
-  };
-}
+export class UpdateMilestoneDto extends customCreateZodDto(
+  updateMilestoneSchema,
+) {}

@@ -12,8 +12,8 @@ import {
   Patch,
   Post,
   Delete,
-  Controller,
 } from '@nestjs/common';
+import { ZodValidationPipe, SwaggerSafeController } from 'core';
 import { <%= service.className %> } from './<%= service.path %>';
 import {
   <%= dto.create.type %>,
@@ -21,9 +21,8 @@ import {
   <%= schema.create %>,
   <%= schema.update %>,
 } from './dto';
-import { ZodValidationPipe } from 'core';
 
-@Controller('<%= routePreffix %>')
+@SwaggerSafeController('<%= routePreffix %>')
 export class <%= controllerClassName %> {
   public constructor(private readonly <%= service.name %>: <%= service.className %>) {}
 

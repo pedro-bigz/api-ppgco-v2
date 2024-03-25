@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+import _kebabCase from 'lodash/kebabCase';
 import {
   ConstantsGenerator,
   ControllerGenerator,
@@ -18,6 +19,8 @@ import {
   ModelFolderGenerator,
   DtoFolderGenerator,
 } from './generators';
+import { PermissionsService } from '@app/permissions';
+import { RoleHasPermissionsService } from '@app/role-has-permissions';
 
 export type IndividualGenerateType =
   | 'model'
@@ -48,6 +51,8 @@ export class CrudGeneratorService {
     private controllerGenerator: ControllerGenerator,
     private providersGenerator: ProvidersGenerator,
     private moduleImportGenerator: ModuleImportGenerator,
+    private permissionsService: PermissionsService,
+    private roleHasPermissionsService: RoleHasPermissionsService,
   ) {}
 
   public async init(
@@ -164,5 +169,26 @@ export class CrudGeneratorService {
     for (const item of this.queue) {
       await item.setLog(log).generate(tableName, force);
     }
+
+    await this.runMigrations(tableName);
+  }
+
+  public async runMigrations(tableName: string) {
+    const modules = ['index', 'list', 'create', 'update', 'delete'];
+    const permissionsDto = modules.map((moduleName) => ({
+      name: _kebabCase(tableName) + '.' + moduleName,
+      guard: 'admin',
+      created_at: new Date(),
+      updated_at: new Date(),
+    }));
+
+    const permissions =
+      await this.permissionsService.bulkCreate(permissionsDto);
+
+    const permissionIds = permissions.map(
+      (permission) => permission.dataValues.id,
+    );
+
+    this.roleHasPermissionsService.bulkCreate(1, permissionIds);
   }
 }
