@@ -1,14 +1,9 @@
-import { Can } from '@app/permissions';
-import {
-  applyDecorators,
-  CanActivate,
-  SetMetadata,
-  Type,
-  UseGuards,
-} from '@nestjs/common';
-import { AuthGuard } from './auth.guard';
-import { PermissionGuard } from '@app/permissions/permissions.guard';
+import { applyDecorators, SetMetadata } from '@nestjs/common';
 
 export const IS_PUBLIC_KEY = 'isPublic';
-export const Public = () => SetMetadata(IS_PUBLIC_KEY, true);
+export const Public = () =>
+  applyDecorators(
+    SetMetadata(IS_PUBLIC_KEY, true),
+    SetMetadata('swagger/apiSecurity', [IS_PUBLIC_KEY]),
+  );
 export const Private = () => SetMetadata(IS_PUBLIC_KEY, false);

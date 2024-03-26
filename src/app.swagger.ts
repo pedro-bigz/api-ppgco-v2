@@ -1,6 +1,7 @@
 import { INestApplication } from '@nestjs/common';
-import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import { DocumentBuilder, OpenAPIObject, SwaggerModule } from '@nestjs/swagger';
 import { patchNestJsSwagger } from 'nestjs-zod';
+import { IS_PUBLIC_KEY } from './auth';
 
 type AppSwaggerDataType = {
   title: string;
@@ -22,11 +23,25 @@ export class AppSwagger {
       .setTitle(this.data.title)
       .setDescription(this.data.description)
       .setVersion(this.data.version)
+      .addBearerAuth()
       .build();
   }
 
   createDocument(app: INestApplication<any>) {
-    return SwaggerModule.createDocument(app, this.build());
+    const document = SwaggerModule.createDocument(app, this.build());
+
+    Object.values((document as OpenAPIObject).paths).forEach((path: any) => {
+      Object.values(path).forEach((method: any) => {
+        if (
+          Array.isArray(method.security) &&
+          method.security.includes(IS_PUBLIC_KEY)
+        ) {
+          method.security = undefined;
+        }
+      });
+    });
+
+    return document;
   }
 
   configure(app: INestApplication<any>) {

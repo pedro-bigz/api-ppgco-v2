@@ -1,5 +1,5 @@
 import { Controller as NestController, applyDecorators } from '@nestjs/common';
-import { ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import _capitalize from 'lodash/capitalize';
 
 const resolveTagName = (name: string) => {
@@ -7,5 +7,9 @@ const resolveTagName = (name: string) => {
 };
 
 export const SwaggerSafeController = (name: string) => {
-  return applyDecorators(ApiTags(resolveTagName(name)), NestController(name));
+  return applyDecorators(
+    ApiTags(resolveTagName(name)),
+    ApiBearerAuth(),
+    NestController(name),
+  );
 };
