@@ -9,7 +9,7 @@ import { UserService } from 'src/user';
 type TokenType = {
   _id: number;
   email: string;
-  nome: string;
+  name: string;
 };
 
 @Injectable()
@@ -30,7 +30,7 @@ export class AuthService {
     const {
       password: storedPassword,
       id: userId,
-      ...usedData
+      ...userData
     } = user.dataValues;
 
     if (!bcrypt.compareSync(password, storedPassword)) {
@@ -40,7 +40,7 @@ export class AuthService {
     const payload = {
       _id: userId,
       email,
-      nome: usedData.nome,
+      name: user.full_name,
     };
 
     const accessToken = await this.jwtService.signAsync(payload, {
@@ -55,14 +55,7 @@ export class AuthService {
 
     return {
       auth: { accessToken, refreshToken },
-      user: {
-        id: userId,
-        nome: usedData.nome,
-        email: usedData.email,
-        avatar: usedData.avatar,
-        master: usedData.master,
-        codiemp: usedData.codiemp,
-      },
+      user: this.usersService.omitSensitiveData(user),
     };
   }
 
@@ -86,12 +79,20 @@ export class AuthService {
   public async refresh(requestBody: any) {
     const token = requestBody.refreshToken;
 
-    const { _id, email } = await this.jwtService.verifyAsync<TokenType>(token, {
-      secret: this.configService.get<string>('JWT_SECRET_KEY'),
-    });
+    console.log({ token });
+
+    const { _id, email, name } = await this.jwtService.verifyAsync<TokenType>(
+      token,
+      {
+        secret: this.configService.get<string>('JWT_REFRESH_SECRET_KEY'),
+      },
+    );
+
+    const user = await this.usersService.findOne(_id);
 
     const payload = {
       _id,
+      name,
       email,
     };
 
@@ -105,6 +106,14 @@ export class AuthService {
       secret: this.configService.get<string>('JWT_SECRET_KEY'),
     });
 
-    return { auth: { accessToken, refreshToken } };
+    return {
+      auth: { accessToken, refreshToken },
+      user: {
+        id: _id,
+        name: user?.full_name,
+        email: user?.email,
+        // avatar: user?.avatar,
+      },
+    };
   }
 }

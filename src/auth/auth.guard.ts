@@ -2,6 +2,7 @@ import {
   CanActivate,
   ExecutionContext,
   Injectable,
+  InternalServerErrorException,
   UnauthorizedException,
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
@@ -47,11 +48,15 @@ export class AuthGuard implements CanActivate {
         secret: this.configService.get<string>('JWT_SECRET_KEY'),
       });
 
-      const user = payload as UserPayload;
-
       // 💡 We're assigning the payload to the request object here
       // so that we can access it in our route handlers
-      request['user'] = await this.userService.findOne(user._id);
+      const user = await this.userService.findOne(payload._id);
+
+      if (!user) {
+        throw new InternalServerErrorException('User localization error');
+      }
+
+      request['user'] = this.userService.omitSensitiveData(user);
     } catch (error) {
       throw new UnauthorizedException();
     }

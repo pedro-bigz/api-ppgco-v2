@@ -57,6 +57,13 @@ export class User extends Model {
   @BelongsToMany(() => Role, () => UserHasRole)
   roles: Role[];
 
+  get full_name() {
+    console.log('object');
+    return (
+      this.getDataValue('first_name') + ' ' + this.getDataValue('last_name')
+    );
+  }
+
   @AfterCreate
   static sendVerificationEmail(instance: User) {
     console.log(instance);

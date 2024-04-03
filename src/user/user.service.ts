@@ -2,7 +2,8 @@ import { Inject, Injectable, UnauthorizedException } from '@nestjs/common';
 import { USER_REPOSITORY } from './user.constants';
 import { User } from './entities/user.entity';
 import { CreateUserDto, UpdateUserDto } from './dto';
-import * as bcrypt from 'bcryptjs';
+import bcrypt from 'bcryptjs';
+import _omit from 'lodash/omit';
 
 @Injectable()
 export class UserService {
@@ -31,6 +32,15 @@ export class UserService {
 
   public findOne(id: number): Promise<User | null> {
     return this.userModel.findOne({ where: { id } });
+  }
+
+  public omitSensitiveData(user: User) {
+    return _omit(
+      user?.dataValues,
+      'password',
+      'remember_token',
+      'email_verified_at',
+    );
   }
 
   public findByEmail(email: string): Promise<User | null> {

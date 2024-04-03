@@ -34,9 +34,9 @@ export class AuthController {
     return this.authService.verify(req.headers.authorization);
   }
 
-  @Public()
-  @Post('refresh')
-  public refresh(@Body() body) {
+  @Post('refresh-token')
+  public refresh(@Body() body: any) {
+    console.log({ body });
     return this.authService.refresh(body);
   }
 }
