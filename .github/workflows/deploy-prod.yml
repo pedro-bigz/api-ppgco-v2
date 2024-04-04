@@ -23,9 +23,9 @@ jobs:
         with:
           instance_name: '${{ secrets.GCP_INSTANCE_NAME }}'
           zone: '${{ secrets.GCP_INSTANCE_ZONE }}'
+          user: '${{ secrets.GCP_USERNAME }}'
           ssh_private_key: '${{ secrets.GCP_SSH_PRIVATE_KEY }}'
           command: |
-            source ~/.ssh/id_rsa
             source ~/.nvm/nvm.sh
             nvm use 20.10.0
             cd /var/www/ppgco-vault
