@@ -24,8 +24,7 @@ jobs:
           instance_name: '${{ secrets.GCP_INSTANCE_NAME }}'
           zone: '${{ secrets.GCP_INSTANCE_ZONE }}'
           ssh_private_key: '${{ secrets.GCP_SSH_PRIVATE_KEY }}'
-          script: |
-            set -x
+          command: |
             sudo chmod -R 777 /var/www/
             source ~/.nvm/nvm.sh
             nvm use 20.10.0
@@ -34,8 +33,8 @@ jobs:
             git pull origin main
             /bin/bash /var/www/ppgco-vault/api-ppgco-ufu/prod/deploy.sh
 
-        # Example of using the output
-        - id: 'test'
-          run: |-
-            echo '${{ steps.compute-ssh.outputs.stdout }}'
-            echo '${{ steps.compute-ssh.outputs.stderr }}'
+      # Example of using the output
+      - id: 'test'
+        run: |-
+          echo '${{ steps.compute-ssh.outputs.stdout }}'
+          echo '${{ steps.compute-ssh.outputs.stderr }}'
