@@ -20,7 +20,7 @@ export class AppSwagger {
 
   build() {
     return new DocumentBuilder()
-      .setTitle(this.data.title + this.data.title + this.data.title)
+      .setTitle(this.data.title)
       .setDescription(this.data.description)
       .setVersion(this.data.version)
       .addBearerAuth()

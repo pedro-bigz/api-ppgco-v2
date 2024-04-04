@@ -6,36 +6,36 @@ on:
       - main
 
 jobs:
-  update:
-    runs-on: ubuntu-latest
+  job_id:
+    permissions:
+      contents: 'read'
+      id-token: 'write'
+
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+    - uses: 'actions/checkout@v4'
 
-      - id: "auth"
-        uses: "google-github-actions/auth@v2"
-        with:
-          project_id: "${{ secrets.GCP_PROJECT_ID }}"
-          workload_identity_provider: "projects/123456789/locations/global/workloadIdentityPools/my-pool/providers/my-provider"
-          service_account: "my-service-account@my-project.iam.gserviceaccount.com"
-          service_account_key: "${{ secrets.GCP_CREDENTIALS }}"
+    - id: 'auth'
+      uses: 'google-github-actions/auth@v2'
+      with:
+        workload_identity_provider: 'projects/123456789/locations/global/workloadIdentityPools/my-pool/providers/my-provider'
+        service_account: 'my-service-account@my-project.iam.gserviceaccount.com'
 
-      - id: "compute-ssh"
-        uses: "google-github-actions/ssh-compute@v1"
-        with:
-          instance_name: "api-ppgco-v1"
-          zone: "us-west4-a"
-          ssh_private_key: "${{ secrets.GCP_SSH_PRIVATE_KEY }}"
-          command: |
-            source ~/.nvm/nvm.sh
-            nvm use 20.10.0
-            cd /root/projects/igreen-vault
-            git checkout origin main
-            git pull origin main
-            /bin/bash /root/projects/igreen-vault/api-igreen-back-office/prod/deploy.sh
+    - id: 'compute-ssh'
+      uses: 'google-github-actions/ssh-compute@v1'
+      with:
+        instance_name: '${{ secrets.GCP_INSTANCE_NAME }}'
+        zone: '${{ secrets.GCP_INSTANCE_ZONE }}'
+        ssh_private_key: '${{ secrets.GCP_SSH_PRIVATE_KEY }}'
+        command: |
+          source ~/.nvm/nvm.sh
+          nvm use 20.10.0
+          cd /root/projects/igreen-vault
+          git checkout origin main
+          git pull origin main
+          /bin/bash /root/projects/igreen-vault/api-igreen-back-office/prod/deploy.sh
 
       # Example of using the output
-      - id: "test"
+      - id: 'test'
         run: |-
           echo '${{ steps.compute-ssh.outputs.stdout }}'
           echo '${{ steps.compute-ssh.outputs.stderr }}'
