@@ -25,6 +25,7 @@ jobs:
           zone: '${{ secrets.GCP_INSTANCE_ZONE }}'
           ssh_private_key: '${{ secrets.GCP_SSH_PRIVATE_KEY }}'
           script: |
+            set -x
             sudo chmod -R 777 /var/www/
             source ~/.nvm/nvm.sh
             nvm use 20.10.0
