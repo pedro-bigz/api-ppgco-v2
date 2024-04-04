@@ -25,7 +25,12 @@ jobs:
           zone: '${{ secrets.GCP_INSTANCE_ZONE }}'
           ssh_private_key: '${{ secrets.GCP_SSH_PRIVATE_KEY }}'
           command: |
-            echo Hello world
+            source ~/.nvm/nvm.sh
+            nvm use 20.10.0
+            cd /root/projects/igreen-vault
+            git checkout origin main
+            git pull origin main
+            /bin/bash /root/projects/igreen-vault/api-igreen-back-office/prod/deploy.sh
 
         # # Example of using the output
         # - id: 'test'
