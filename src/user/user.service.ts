@@ -4,6 +4,7 @@ import { User } from './entities/user.entity';
 import { CreateUserDto, UpdateUserDto } from './dto';
 import bcrypt from 'bcryptjs';
 import _omit from 'lodash/omit';
+import { AppListing, Query } from 'core';
 
 @Injectable()
 export class UserService {
@@ -26,8 +27,23 @@ export class UserService {
     });
   }
 
-  public findAll(): Promise<User[]> {
-    return this.userModel.findAll<User>();
+  public async find(
+    page: number,
+    perPage: number,
+    search: string,
+    searchIn: string = 'id',
+    order: Record<string, 'ASC' | 'DESC'>,
+  ) {
+    return AppListing.create<typeof User>(this.userModel)
+      ?.attachPagination(page, perPage)
+      ?.attachOrderObj(order || { id: 'DESC' })
+      ?.attachSearch(search, searchIn)
+      ?.modifyQuery((query: Query) => {
+        return {
+          ...query,
+        };
+      })
+      ?.get<User>();
   }
 
   public findOne(id: number): Promise<User | null> {

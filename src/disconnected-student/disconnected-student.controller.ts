@@ -1,12 +1,19 @@
 import { Body, Query, Param, Get, Post } from '@nestjs/common';
-import { ZodValidationPipe, SwaggerSafeController } from 'core';
+import {
+  ZodValidationPipe,
+  SwaggerSafeController,
+  SwaggerSafeGet,
+  SwaggerSafePost,
+} from 'core';
 import { DisconnectedStudentService } from './disconnected-student.service';
 import {
   CreateDisconnectedStudentDto,
   createDisconnectedStudentSchema,
+  PaginatedDisconnectedStudentDto,
 } from './dto';
 import { Can } from '@app/permissions';
 import { Permissions } from './disconnected-student.enum';
+import { DisconnectedStudent } from './entities';
 
 @SwaggerSafeController('disconnect-student')
 export class DisconnectedStudentController {
@@ -14,7 +21,7 @@ export class DisconnectedStudentController {
     private readonly disconnectedStudentService: DisconnectedStudentService,
   ) {}
 
-  @Get()
+  @SwaggerSafeGet({ type: PaginatedDisconnectedStudentDto })
   @Can(Permissions.List)
   public findAll(
     @Query('page') page: string,
@@ -32,13 +39,13 @@ export class DisconnectedStudentController {
     );
   }
 
-  @Get(':id')
+  @SwaggerSafeGet({ path: ':id', type: DisconnectedStudent })
   @Can(Permissions.Index)
   public findOne(@Param('id') id: string) {
     return this.disconnectedStudentService.findOne(+id);
   }
 
-  @Post(':studentId')
+  @SwaggerSafePost({ path: ':studentId', type: DisconnectedStudent })
   @Can(Permissions.Create)
   public disconnectStudent(
     @Param('studentId') studentId: string,

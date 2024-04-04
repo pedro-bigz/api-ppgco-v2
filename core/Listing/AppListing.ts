@@ -1,32 +1,10 @@
-import { FindAndCountOptions, Model as SequelizeModel } from 'sequelize';
-import { Where } from 'sequelize/types/utils';
+import { Model as SequelizeModel } from 'sequelize';
 import { insensitiveLike } from 'utils';
-
-interface Model {
-  findAndCountAll: <T>(
-    options?: Omit<FindAndCountOptions<any>, 'group'> | undefined,
-  ) => Promise<{ count: number; rows: T[] }>;
-}
-
-export type Query = {
-  [x: string]: { [x: string]: Where | any } | number | string;
-};
-
-export type QueryModifierCallback = (query: Query) => Query;
-
-export type PaginatedResponseType<M> = {
-  data: M;
-  page: number;
-  perPage: number;
-  nextPage?: number;
-  prevPage?: number;
-  totalPages: number;
-  totalItems: number;
-};
-
-export type PaginaginatedListingPromise<E> = Promise<
-  PaginatedResponseType<E[]> | undefined
->;
+import {
+  Model,
+  PaginaginatedListingPromise,
+  QueryModifierCallback,
+} from './types';
 
 export class AppListing<T extends Model> {
   private page: number;

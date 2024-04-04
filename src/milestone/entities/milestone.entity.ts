@@ -1,11 +1,12 @@
-import { MilestoneHistory } from '@app/milestone-history';
+import { Project } from '@app/project';
 import {
   BeforeUpdate,
+  BelongsTo,
   Column,
   CreatedAt,
   DeletedAt,
+  ForeignKey,
   Model,
-  Sequelize,
   Table,
   UpdatedAt,
 } from 'sequelize-typescript';
@@ -41,6 +42,7 @@ export class Milestone extends Model {
   situation: MilestoneSituation;
 
   @Column
+  @ForeignKey(() => Project)
   project_id: number;
 
   @CreatedAt
@@ -51,4 +53,7 @@ export class Milestone extends Model {
 
   @DeletedAt
   deleted_at: Date;
+
+  @BelongsTo(() => Project)
+  project: Project;
 }

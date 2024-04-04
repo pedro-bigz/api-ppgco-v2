@@ -1,20 +1,30 @@
-import { Body, Delete, Get, Param, Patch, Post, Query } from '@nestjs/common';
-import { ZodValidationPipe, SwaggerSafeController } from 'core';
+import { Body, Param, Query } from '@nestjs/common';
+import {
+  ZodValidationPipe,
+  SwaggerSafeController,
+  SwaggerSafeGet,
+  SwaggerSafeDelete,
+  SwaggerSafePatch,
+  SwaggerSafePost,
+  UpdateSuccessResponse,
+} from 'core';
 import { ProjectService } from './project.service';
 import {
   CreateProjectDto,
   UpdateProjectDto,
   createProjectSchema,
   updateProjectSchema,
+  PaginatedProjectDto,
 } from './dto';
 import { Can } from '@app/permissions';
 import { Permissions } from './project.enum';
+import { Project } from './entities';
 
 @SwaggerSafeController('project')
 export class ProjectController {
   public constructor(private readonly projectService: ProjectService) {}
 
-  @Get()
+  @SwaggerSafeGet({ type: Project, isPaginated: true })
   @Can(Permissions.List)
   public findAll(
     @Query('page') page: string,
@@ -26,13 +36,13 @@ export class ProjectController {
     return this.projectService.find(+page, +perPage, search, searchIn, order);
   }
 
-  @Get(':id')
+  @SwaggerSafeGet({ path: ':id', type: Project })
   @Can(Permissions.Index)
   public findOne(@Param('id') id: string) {
     return this.projectService.findOne(+id);
   }
 
-  @Post()
+  @SwaggerSafePost({ type: Project })
   @Can(Permissions.Create)
   public create(
     @Body(new ZodValidationPipe(createProjectSchema))
@@ -41,19 +51,29 @@ export class ProjectController {
     return this.projectService.create(createProjectDto);
   }
 
-  @Patch(':id')
+  @SwaggerSafePatch({ path: ':id' })
   @Can(Permissions.Update)
   public update(
     @Param('id') id: string,
     @Body(new ZodValidationPipe(updateProjectSchema))
     updateProjectDto: UpdateProjectDto,
   ) {
-    return this.projectService.update(+id, updateProjectDto);
+    const updateds = this.projectService.update(+id, updateProjectDto);
+    return {
+      status: 'success',
+      message: 'Project updated successfully',
+      updateds,
+    };
   }
 
-  @Delete(':id')
+  @SwaggerSafeDelete({ path: ':id' })
   @Can(Permissions.Delete)
   public destroy(@Param('id') id: string) {
-    return this.projectService.remove(+id);
+    const deleteds = this.projectService.remove(+id);
+    return {
+      status: 'success',
+      message: 'Project deleted successfully',
+      deleteds,
+    };
   }
 }

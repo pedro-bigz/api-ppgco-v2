@@ -1,30 +1,37 @@
 import {
   Body,
-  Delete,
-  Get,
   InternalServerErrorException,
   Param,
-  Patch,
-  Post,
   Query,
-  UseGuards,
 } from '@nestjs/common';
-import { ZodValidationPipe, SwaggerSafeController } from 'core';
+import {
+  ZodValidationPipe,
+  SwaggerSafeController,
+  SwaggerSafeGet,
+  PaginatedResponse,
+  SwaggerSafePost,
+  SwaggerSafePatch,
+  UpdateSuccessResponse,
+  SwaggerSafeDelete,
+  DeleteSuccessResponse,
+} from 'core';
+import { RequestUser, User } from '@app/user';
+import { Can } from '@app/permissions';
 import { StudentService } from './student.service';
 import {
   CreateStudentDto,
+  PaginatedStudentDto,
   UpdateStudentDto,
   createStudentSchema,
   updateStudentSchema,
 } from './dto';
-import { RequestUser, User } from '@app/user';
-import { Can } from '@app/permissions';
+import { Student } from './entities';
 
 @SwaggerSafeController('student')
 export class StudentController {
   public constructor(private readonly studentService: StudentService) {}
 
-  @Get()
+  @SwaggerSafeGet({ type: PaginatedStudentDto, isPaginated: true })
   @Can('student.list')
   public findAll(
     @RequestUser() user: User,
@@ -34,17 +41,16 @@ export class StudentController {
     @Query('searchIn') searchIn: string,
     @Query('order') order: Record<string, 'ASC' | 'DESC'>,
   ) {
-    console.log({ user });
     return this.studentService.find(+page, +perPage, search, searchIn, order);
   }
 
-  @Get(':id')
+  @SwaggerSafeGet({ path: ':id', type: Student })
   @Can('student.index')
   public findOne(@Param('id') id: string) {
     return this.studentService.findOne(+id);
   }
 
-  @Post()
+  @SwaggerSafePost({ type: Student })
   @Can('student.create')
   public create(
     @Body(new ZodValidationPipe(createStudentSchema))
@@ -53,7 +59,7 @@ export class StudentController {
     return this.studentService.create(createStudentDto);
   }
 
-  @Patch(':id')
+  @SwaggerSafePatch({ path: ':id', type: UpdateSuccessResponse })
   @Can('student.update')
   public async update(
     @Param('id') id: string,
@@ -70,13 +76,20 @@ export class StudentController {
     }
 
     return {
-      message: 'Updated successfully',
+      status: 'success',
+      updateds: +(userUpdateResult && studentUpdateResult),
+      message: 'Student updated successfully',
     };
   }
 
-  @Delete('/:id')
+  @SwaggerSafeDelete({ path: '/:id', type: DeleteSuccessResponse })
   @Can('student.delete')
   public destroy(@Param('id') id: string) {
-    return this.studentService.remove(+id);
+    const deleteds = this.studentService.remove(+id);
+    return {
+      status: 'success',
+      message: 'Student deleted successfully',
+      deleteds,
+    };
   }
 }

@@ -1,5 +1,6 @@
 import { Advisor } from '@app/advisor';
 import { ProjectHasCoadvisor } from '@app/project-has-coadvisor';
+import { Publication } from '@app/publication';
 import { PublicationProject } from '@app/publication-project';
 import { ResearchLine } from '@app/research-line';
 import { Student } from '@app/student';
@@ -65,8 +66,8 @@ export class Project extends Model {
   @BelongsTo(() => ResearchLine)
   researchLine: ResearchLine;
 
-  @HasMany(() => PublicationProject)
-  publications: PublicationProject[];
+  @BelongsToMany(() => Publication, () => PublicationProject)
+  publications: Publication[];
 
   @BelongsToMany(() => Advisor, () => ProjectHasCoadvisor)
   coadvisors: Advisor[];

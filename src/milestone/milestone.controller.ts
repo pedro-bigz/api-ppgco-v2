@@ -1,20 +1,29 @@
-import { Body, Delete, Get, Param, Patch, Post, Query } from '@nestjs/common';
-import { ZodValidationPipe, SwaggerSafeController } from 'core';
+import { Body, Param, Query } from '@nestjs/common';
+import {
+  ZodValidationPipe,
+  SwaggerSafeController,
+  SwaggerSafeGet,
+  SwaggerSafePost,
+  SwaggerSafePatch,
+  SwaggerSafeDelete,
+} from 'core';
 import { MilestoneService } from './milestone.service';
 import {
   CreateMilestoneDto,
+  PaginatedMilestoneDto,
   UpdateMilestoneDto,
   createMilestoneSchema,
   updateMilestoneSchema,
 } from './dto';
 import { Can } from '@app/permissions';
 import { Permissions } from './milestone.enum';
+import { Milestone } from './entities';
 
 @SwaggerSafeController('milestone')
 export class MilestoneController {
   public constructor(private readonly milestoneService: MilestoneService) {}
 
-  @Get()
+  @SwaggerSafeGet({ type: PaginatedMilestoneDto })
   @Can(Permissions.List)
   public findAll(
     @Query('page') page: string,
@@ -26,13 +35,13 @@ export class MilestoneController {
     return this.milestoneService.find(+page, +perPage, search, searchIn, order);
   }
 
-  @Get(':id')
+  @SwaggerSafeGet({ path: ':id', type: Milestone })
   @Can(Permissions.Index)
   public findOne(@Param('id') id: string) {
     return this.milestoneService.findOne(+id);
   }
 
-  @Post(':projectId/new')
+  @SwaggerSafePost({ path: ':projectId/new', type: Milestone })
   @Can(Permissions.Create)
   public create(
     @Param('projectId') projectId: string,
@@ -42,7 +51,7 @@ export class MilestoneController {
     return this.milestoneService.create(+projectId, createMilestoneDto);
   }
 
-  @Patch(':id')
+  @SwaggerSafePatch({ path: ':id' })
   @Can(Permissions.Update)
   public update(
     @Param('id') id: string,
@@ -52,7 +61,7 @@ export class MilestoneController {
     return this.milestoneService.update(+id, updateMilestoneDto);
   }
 
-  @Delete('/:id')
+  @SwaggerSafeDelete({ path: ':id' })
   @Can(Permissions.Delete)
   public destroy(@Param('id') id: string) {
     return this.milestoneService.remove(+id);

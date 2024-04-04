@@ -12,6 +12,7 @@ import {
 } from 'sequelize-typescript';
 import { Role } from '@app/roles';
 import { UserHasRole } from '@app/user-has-roles';
+import { ApiHideProperty } from '@nestjs/swagger';
 
 @DefaultScope(() => ({
   include: [Role],
@@ -31,6 +32,7 @@ export class User extends Model {
   email: string;
 
   @Column
+  @ApiHideProperty()
   password: string;
 
   @Column

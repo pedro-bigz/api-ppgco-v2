@@ -1,3 +1,4 @@
+import { ApiProperty } from '@nestjs/swagger';
 import { Column, Model, Table } from 'sequelize-typescript';
 
 export type DisconnectedStudentReason =
@@ -14,6 +15,7 @@ export class DisconnectedStudent extends Model {
   student_id: number;
 
   @Column
+  @ApiProperty({ type: String, default: 'Prazo nao cumprido' })
   reason: DisconnectedStudentReason;
 
   @Column
