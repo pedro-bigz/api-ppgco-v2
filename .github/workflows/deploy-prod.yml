@@ -6,8 +6,8 @@ on:
       - main
 
 jobs:
-  job_id:
-    runs-on: ubuntu-lastest
+  deploy:
+    runs-on: debian
 
     steps:
       - uses: 'actions/checkout@v4'
