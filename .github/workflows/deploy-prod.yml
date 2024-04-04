@@ -8,9 +8,6 @@ on:
 jobs:
   job_id:
     runs-on: ubuntu-lastest
-    permissions:
-      contents: 'read'
-      id-token: 'write'
 
     steps:
       - uses: 'actions/checkout@v4'
