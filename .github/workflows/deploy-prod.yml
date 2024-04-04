@@ -25,7 +25,12 @@ jobs:
           zone: '${{ secrets.GCP_INSTANCE_ZONE }}'
           ssh_private_key: '${{ secrets.GCP_SSH_PRIVATE_KEY }}'
           command: |
-            echo '# TESTE COMMAND' > /var/www/log
+            source ~/.nvm/nvm.sh &&
+            nvm use 20.10.0 &&
+            cd /var/www/ppgco-vault &&
+            git checkout origin main &&
+            git pull origin main &&
+            /bin/bash /var/www/ppgco-vault/api-ppgco-ufu/prod/deploy.sh
 
         # # Example of using the output
         # - id: 'test'
