@@ -10,12 +10,13 @@ jobs:
     runs-on: debian
 
     steps:
-      - uses: 'actions/checkout@v4'
+      - name: 'Checkout'
+        uses: 'actions/checkout@v4'
 
       - id: 'auth'
         uses: 'google-github-actions/auth@v2'
         with:
-          credentials_json: '${{ secrets.gcp_credentials }}'
+          credentials_json: '${{ secrets.GCP_CREDENTIALS }}'
 
       - id: 'compute-ssh'
         uses: 'google-github-actions/ssh-compute@v1'
