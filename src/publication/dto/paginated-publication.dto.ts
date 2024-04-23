@@ -1,4 +1,4 @@
-import { PaginatedResponse } from 'core';
+import { PaginatedResponse } from '@app/core';
 import { Publication } from '../entities';
 import { ApiProperty } from '@nestjs/swagger';
 

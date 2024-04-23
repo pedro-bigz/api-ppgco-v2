@@ -5,23 +5,20 @@ import {
   CreatedAt,
   DefaultScope,
   DeletedAt,
-  Model,
-  Scopes,
   Table,
   UpdatedAt,
 } from 'sequelize-typescript';
 import { Role } from '@app/roles';
 import { UserHasRole } from '@app/user-has-roles';
-import { ApiHideProperty } from '@nestjs/swagger';
+import { ApiHideProperty, ApiProperty } from '@nestjs/swagger';
+import { ModelWithMedia } from '@app/media';
+import _first from 'lodash/first';
 
 @DefaultScope(() => ({
   include: [Role],
 }))
 @Table({ tableName: 'users' })
-export class User extends Model {
-  @Column({ primaryKey: true, autoIncrement: true })
-  id: number;
-
+export class User extends ModelWithMedia {
   @Column
   first_name: string;
 
@@ -60,14 +57,30 @@ export class User extends Model {
   roles: Role[];
 
   get full_name() {
-    console.log('object');
     return (
       this.getDataValue('first_name') + ' ' + this.getDataValue('last_name')
     );
   }
 
+  @ApiProperty({})
+  avatar: string;
+
+  public registerMediaCollections(): void {
+    this.mediaCollection.addMediaCollection('avatar');
+  }
+
+  public async getAvatar() {
+    const medias = await this.getMedias('avatar');
+    return medias[0];
+  }
+
+  public async getAvatarUrl() {
+    return _first(await this.getMediaUrl('avatar'));
+  }
+
   @AfterCreate
   static sendVerificationEmail(instance: User) {
-    console.log(instance);
+    const { email } = instance;
+    console.log({ email });
   }
 }

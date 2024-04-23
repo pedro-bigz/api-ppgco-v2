@@ -2,7 +2,7 @@ import { Inject, Injectable } from '@nestjs/common';
 import { RESEARCH_LINE_REPOSITORY } from './research-line.constants';
 import { ResearchLine } from './entities';
 import { CreateResearchLineDto, UpdateResearchLineDto } from './dto';
-import { AppListing, Query } from 'core';
+import { AppListing, Query } from '@app/core';
 
 @Injectable()
 export class ResearchLineService {

@@ -2,7 +2,7 @@ import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { SequelizeModule } from '@nestjs/sequelize';
 import { JwtModule } from '@nestjs/jwt';
-import { ENV, SequelizeConfig } from 'core';
+import { ENV, SequelizeConfig } from '@app/core';
 import { AuthService, AuthController, AuthModule } from './auth';
 import { User, UserModule } from './user';
 import { CrudGeneratorModule, crudGeneratorCommands } from './crud-generator';
@@ -29,7 +29,6 @@ import {
   ProjectHasCoadvisorModule,
   ProjectHasCoadvisor,
 } from './project-has-coadvisor';
-import { StorageModule } from './storage/storage.module';
 import { RolesModule, Role } from './roles';
 import { UserHasRolesModule, UserHasRole } from './user-has-roles';
 import {
@@ -37,6 +36,10 @@ import {
   RoleHasPermission,
 } from './role-has-permissions';
 import { PermissionsModule, Permission } from './permissions';
+import { MediaModule, Media } from './media';
+import { MailerModule } from './mailer';
+import { Activation, ActivationsModule } from './activations';
+import { EmailVerificationModule } from './email-verification';
 // {IMPORTS} Don't delete me, I'm used for automatic code generation
 
 const env = ENV();
@@ -58,6 +61,8 @@ const orm = {
     UserHasRole,
     RoleHasPermission,
     Permission,
+    Media,
+    Activation,
     // {MODELS} Don't delete me, I'm used for automatic code generation
   ],
   views: [],
@@ -90,11 +95,14 @@ const orm = {
     PublicationModule,
     PublicationProjectModule,
     ProjectHasCoadvisorModule,
-    StorageModule,
     RolesModule,
     UserHasRolesModule,
     RoleHasPermissionsModule,
     PermissionsModule,
+    MediaModule,
+    MailerModule,
+    ActivationsModule,
+    EmailVerificationModule,
     // {MODULE} Don't delete me, I'm used for automatic code generation
   ],
   controllers: [AuthController],

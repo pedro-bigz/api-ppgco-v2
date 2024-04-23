@@ -6,7 +6,7 @@ import {
   SwaggerSafePost,
   SwaggerSafePatch,
   SwaggerSafeDelete,
-} from 'core';
+} from '@app/core';
 import { ResearchLineService } from './research-line.service';
 import {
   CreateResearchLineDto,

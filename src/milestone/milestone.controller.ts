@@ -6,7 +6,7 @@ import {
   SwaggerSafePost,
   SwaggerSafePatch,
   SwaggerSafeDelete,
-} from 'core';
+} from '@app/core';
 import { MilestoneService } from './milestone.service';
 import {
   CreateMilestoneDto,

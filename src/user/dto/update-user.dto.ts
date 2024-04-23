@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { customCreateZodDto } from 'core';
+import { customCreateZodDto } from '@app/core';
 import { z } from 'zod';
 
 export const updateUserSchema = z.object({

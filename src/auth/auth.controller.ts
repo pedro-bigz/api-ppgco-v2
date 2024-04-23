@@ -6,8 +6,10 @@ import {
   UsePipes,
   Get,
   Request,
+  Head,
+  UnauthorizedException,
 } from '@nestjs/common';
-import { ZodValidationPipe, SwaggerSafeController } from 'core';
+import { ZodValidationPipe, SwaggerSafeController } from '@app/core';
 import { AuthService } from './auth.service';
 import {
   LoginDto,
@@ -15,7 +17,7 @@ import {
   AuthResponseDto,
   CheckTokenResponseDto,
 } from './dto';
-import { Public } from './auth.decorator';
+import { BearerToken, Public } from './auth.decorator';
 import { ApiOkResponse } from '@nestjs/swagger';
 import { User } from '@app/user';
 
@@ -44,13 +46,20 @@ export class AuthController {
     return req.user;
   }
 
-  @Post('check-token')
+  @Public()
+  @Head('check-token')
   @ApiOkResponse({
     description: `This endpoint checks the validity of the token `,
     type: CheckTokenResponseDto,
   })
-  public check(@Request() req: any) {
-    return this.authService.verify(req.headers.authorization);
+  public async check(@BearerToken() token: string) {
+    const { hasAccess } = await this.authService.verify(token);
+
+    if (!hasAccess) {
+      throw new UnauthorizedException();
+    }
+
+    return hasAccess;
   }
 
   @Post('refresh-token')
@@ -59,7 +68,6 @@ export class AuthController {
     type: AuthResponseDto,
   })
   public refresh(@Body() body: any) {
-    console.log({ body });
     return this.authService.refresh(body);
   }
 }

@@ -4,7 +4,7 @@ import {
   SwaggerSafeController,
   SwaggerSafeGet,
   SwaggerSafePost,
-} from 'core';
+} from '@app/core';
 import { DisconnectedStudentService } from './disconnected-student.service';
 import {
   CreateDisconnectedStudentDto,

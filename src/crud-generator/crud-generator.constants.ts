@@ -73,6 +73,7 @@ export const TypePairConstants = [
   ['char', 'string'],
   ['varchar', 'string'],
   ['text', 'string'],
+  ['json', 'string'],
   ['date', 'Date'],
   ['bytea', 'Blob'],
   ['timestamp', 'Date'],

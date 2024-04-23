@@ -6,7 +6,7 @@ import {
   SwaggerSafePost,
   SwaggerSafePatch,
   SwaggerSafeDelete,
-} from 'core';
+} from '@app/core';
 import {
   CreatePublicationDto,
   PaginatedPublicationDto,

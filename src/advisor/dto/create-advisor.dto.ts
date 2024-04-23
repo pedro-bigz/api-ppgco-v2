@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import { ApiProperty } from '@nestjs/swagger';
-import { customCreateZodDto } from 'core';
+import { customCreateZodDto } from '@app/core';
 
 export const createAdvisorSchema = z.object({
   lattes: z.string().max(50),

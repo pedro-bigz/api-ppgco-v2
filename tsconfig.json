@@ -19,10 +19,11 @@
     "forceConsistentCasingInFileNames": false,
     "noFallthroughCasesInSwitch": false,
     "paths": {
+      "src/*": ["./src/*"],
       "@app/*": ["./src/*"],
       "@dist/*": ["./dist/*"]
       // "@storage/*": ["./storage/*"]
     }
   },
-  "include": ["./src", "./utils", "./core", "utils/.ts"]
+  "include": ["./src"]
 }

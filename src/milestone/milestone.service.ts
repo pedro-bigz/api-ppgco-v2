@@ -2,7 +2,7 @@ import { Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { MILESTONE_REPOSITORY } from './milestone.constants';
 import { Milestone } from './entities';
 import { CreateMilestoneDto, UpdateMilestoneDto } from './dto';
-import { AppListing, Query } from 'core';
+import { AppListing, Query } from '@app/core';
 import { MilestoneDocumentService } from '@app/milestone-document';
 import {
   CreateMilestoneHistoryDto,

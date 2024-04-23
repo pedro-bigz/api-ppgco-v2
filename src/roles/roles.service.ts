@@ -1,8 +1,10 @@
 import { Inject, Injectable } from '@nestjs/common';
+import _capitalize from 'lodash/capitalize';
+import { Op } from 'sequelize';
+import { AppListing, Query } from '@app/core';
 import { ROLES_REPOSITORY } from './roles.constants';
 import { Role } from './entities';
 import { CreateRolesDto, UpdateRolesDto } from './dto';
-import { AppListing, Query } from 'core';
 
 @Injectable()
 export class RolesService {
@@ -44,6 +46,22 @@ export class RolesService {
 
   public update(id: number, updateRolesDto: UpdateRolesDto) {
     return this.roleModel.update(updateRolesDto, { where: { id } });
+  }
+
+  public findByName(name: string) {
+    return this.roleModel.findOne({
+      where: { name: _capitalize(name) },
+    });
+  }
+
+  public findByNameList(names: string[]) {
+    return this.roleModel.findAll({
+      where: {
+        name: {
+          [Op.in]: names.map(_capitalize),
+        },
+      },
+    });
   }
 
   // public remove(id: number) {

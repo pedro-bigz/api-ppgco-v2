@@ -1,9 +1,13 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import {
+  ForbiddenException,
+  Injectable,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcryptjs';
 
-import { ENV } from 'core';
+import { ENV } from '@app/core';
 import { UserService } from 'src/user';
 
 type TokenType = {
@@ -24,7 +28,7 @@ export class AuthService {
     const user = await this.usersService.findByEmail(email);
 
     if (!user) {
-      throw new UnauthorizedException();
+      throw new ForbiddenException();
     }
 
     const {
@@ -35,6 +39,14 @@ export class AuthService {
 
     if (!bcrypt.compareSync(password, storedPassword)) {
       throw new UnauthorizedException();
+    }
+
+    if (userData.forbidden) {
+      throw new ForbiddenException('Forbidden access');
+    }
+
+    if (!userData.activated) {
+      throw new UnauthorizedException('Activate your account before sign in');
     }
 
     const payload = {
@@ -64,8 +76,12 @@ export class AuthService {
     return type === 'Bearer' ? token : '';
   }
 
-  public async verify(authorization: string) {
+  public async verify(authorization: string | undefined | null) {
     try {
+      if (!authorization) {
+        throw new Error();
+      }
+
       const hasAccess = this.jwtService.verify(
         this.extractTokenFromAuthorization(authorization),
       );
@@ -79,8 +95,6 @@ export class AuthService {
   public async refresh(requestBody: any) {
     const token = requestBody.refreshToken;
 
-    console.log({ token });
-
     const { _id, email, name } = await this.jwtService.verifyAsync<TokenType>(
       token,
       {
@@ -89,6 +103,10 @@ export class AuthService {
     );
 
     const user = await this.usersService.findOne(_id);
+
+    if (!user) {
+      throw new ForbiddenException();
+    }
 
     const payload = {
       _id,
@@ -108,12 +126,7 @@ export class AuthService {
 
     return {
       auth: { accessToken, refreshToken },
-      user: {
-        id: _id,
-        name: user?.full_name,
-        email: user?.email,
-        // avatar: user?.avatar,
-      },
+      user: this.usersService.omitSensitiveData(user),
     };
   }
 }

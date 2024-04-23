@@ -7,7 +7,7 @@ import {
   SwaggerSafePatch,
   SwaggerSafePost,
   UpdateSuccessResponse,
-} from 'core';
+} from '@app/core';
 import { ProjectService } from './project.service';
 import {
   CreateProjectDto,

@@ -1,7 +1,7 @@
 import { z } from 'zod';
 import { ApiProperty } from '@nestjs/swagger';
-import { isValid, toIsoString } from 'utils';
-import { customCreateZodDto } from 'core';
+import { isValid, toIsoString } from '@app/utils';
+import { customCreateZodDto } from '@app/core';
 
 export const createPermissionsSchema = z.object({
   name: z.string().max(255),

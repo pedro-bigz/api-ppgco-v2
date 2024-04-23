@@ -2,7 +2,7 @@ import { Inject, Injectable } from '@nestjs/common';
 import { PERMISSIONS_REPOSITORY } from './permissions.constants';
 import { Permission } from './entities';
 import { CreatePermissionsDto, UpdatePermissionsDto } from './dto';
-import { AppListing, Query } from 'core';
+import { AppListing, Query } from '@app/core';
 
 @Injectable()
 export class PermissionsService {

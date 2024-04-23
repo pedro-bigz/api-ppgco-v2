@@ -2,7 +2,7 @@ import { Inject, Injectable } from '@nestjs/common';
 import { PUBLICATION_REPOSITORY } from './publication.constants';
 import { Publication } from './entities';
 import { CreatePublicationDto, UpdatePublicationDto } from './dto';
-import { AppListing, Query } from 'core';
+import { AppListing, Query } from '@app/core';
 
 @Injectable()
 export class PublicationService {
@@ -43,7 +43,9 @@ export class PublicationService {
   }
 
   public update(id: number, updatePublicationDto: UpdatePublicationDto) {
-    return this.publicationModel.update(updatePublicationDto, { where: { id } });
+    return this.publicationModel.update(updatePublicationDto, {
+      where: { id },
+    });
   }
 
   public remove(id: number) {

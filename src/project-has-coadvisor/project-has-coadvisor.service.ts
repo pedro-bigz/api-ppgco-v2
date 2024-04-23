@@ -5,7 +5,7 @@ import {
   CreateProjectHasCoadvisorDto,
   UpdateProjectHasCoadvisorDto,
 } from './dto';
-import { AppListing, Query } from 'core';
+import { AppListing, Query } from '@app/core';
 
 @Injectable()
 export class ProjectHasCoadvisorService {

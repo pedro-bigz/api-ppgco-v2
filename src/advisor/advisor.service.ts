@@ -2,7 +2,7 @@ import { Inject, Injectable } from '@nestjs/common';
 import { ADVISOR_REPOSITORY } from './advisor.constants';
 import { Advisor } from './entities';
 import { CreateAdvisorDto, UpdateAdvisorDto } from './dto';
-import { AppListing, Query } from 'core';
+import { AppListing, Query } from '@app/core';
 
 @Injectable()
 export class AdvisorService {

@@ -6,7 +6,7 @@ import {
   SwaggerSafePatch,
   SwaggerSafeDelete,
   SwaggerSafePost,
-} from 'core';
+} from '@app/core';
 import { AdvisorService } from './advisor.service';
 import {
   CreateAdvisorDto,

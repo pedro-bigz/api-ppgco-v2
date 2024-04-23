@@ -1,7 +1,7 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { AppSwagger } from './app.swagger';
-import { configHelper } from 'core';
+import { configHelper } from '@app/core';
 import { PermissionGuard } from './permissions/permissions.guard';
 
 async function bootstrap() {

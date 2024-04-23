@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import { ApiProperty } from '@nestjs/swagger';
-import { customCreateZodDto } from 'core';
+import { customCreateZodDto } from '@app/core';
 
 export const updateMilestoneDocumentSchema = z.object({
   doc_name: z.string().max(255).optional(),

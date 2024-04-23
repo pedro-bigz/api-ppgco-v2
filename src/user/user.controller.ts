@@ -1,4 +1,10 @@
-import { Body, Param, Query } from '@nestjs/common';
+import {
+  Body,
+  NotFoundException,
+  Param,
+  Query,
+  UploadedFiles,
+} from '@nestjs/common';
 import {
   DeleteSuccessResponse,
   SwaggerSafeController,
@@ -7,22 +13,33 @@ import {
   SwaggerSafePatch,
   SwaggerSafePost,
   UpdateSuccessResponse,
-} from 'core';
+  ZodValidationPipe,
+} from '@app/core';
 import { UserService } from './user.service';
-import { CreateUserDto, UpdateUserDto } from './dto';
+import { createUserSchema, UpdateUserDto } from './dto';
 import { User } from './entities';
-import { SwaggerResponseType } from 'core/Common/Response/SwaggerResponseType';
 import { Can } from '@app/permissions';
 import { RequestUser } from './user.decorator';
 import { PaginatedUserDto } from './dto';
+import {
+  UploadedMediaValidationPipe,
+  UseMediaValidatorInterceotor,
+} from '@app/media';
+import { COLLECTIONS } from './user.constants';
 
 @SwaggerSafeController('user')
 export class UserController {
   public constructor(private readonly userService: UserService) {}
 
   @SwaggerSafePost({ type: User })
-  public create(@Body() createUserDto: CreateUserDto) {
-    return this.userService.create(createUserDto);
+  @UseMediaValidatorInterceotor(COLLECTIONS)
+  uploadFileAndPassValidation(
+    @Body() createUserDto: any,
+    @UploadedFiles(UploadedMediaValidationPipe(COLLECTIONS))
+    files: Record<string, Express.Multer.File[]>,
+  ) {
+    console.log(createUserDto);
+    return this.userService.create(createUserDto, files);
   }
 
   @SwaggerSafeGet({ type: PaginatedUserDto })
@@ -39,8 +56,20 @@ export class UserController {
   }
 
   @SwaggerSafeGet({ path: ':id', type: User })
-  public findOne(@Param('id') id: string) {
-    return this.userService.findOne(+id);
+  public async findOne(@Param('id') id: string[]) {
+    console.log('findOne', { id });
+    const user = await this.userService.findOne(+id);
+
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    const avatar = await user.getAvatarUrl();
+
+    return {
+      avatar,
+      ...this.userService.omitSensitiveData(user),
+    };
   }
 
   @SwaggerSafePatch({ path: ':id', type: UpdateSuccessResponse })

@@ -1,5 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { AppListing, Query } from 'core';
+import { AppListing, Query } from '@app/core';
 import { MILESTONE_DOCUMENT_REPOSITORY } from './milestone-document.constants';
 import { MilestoneDocument } from './entities';
 import { CreateMilestoneDocumentDto, UpdateMilestoneDocumentDto } from './dto';

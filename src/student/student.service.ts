@@ -2,7 +2,7 @@ import { Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { STUDENT_REPOSITORY } from './student.constants';
 import { Student } from './entities';
 import { CreateStudentDto, UpdateStudentDto } from './dto';
-import { AppListing, Query } from 'core';
+import { AppListing, Query } from '@app/core';
 import { UserService } from '@app/user';
 
 @Injectable()

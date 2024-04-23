@@ -2,7 +2,7 @@ import { Inject, Injectable } from '@nestjs/common';
 import { DISCONNECTED_STUDENT_REPOSITORY } from './disconnected-student.constants';
 import { DisconnectedStudent } from './entities';
 import { CreateDisconnectedStudentDto } from './dto';
-import { AppListing, Query } from 'core';
+import { AppListing, Query } from '@app/core';
 
 @Injectable()
 export class DisconnectedStudentService {

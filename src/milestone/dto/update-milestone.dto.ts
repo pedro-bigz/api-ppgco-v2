@@ -1,9 +1,9 @@
 import { z } from 'zod';
-import { isValid, toIsoString } from 'utils';
+import { isValid, toIsoString } from '@app/utils';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { MilestoneSituation } from '../entities';
 import { updateMilestoneDocumentSchema } from '@app/milestone-document';
-import { customCreateZodDto } from 'core';
+import { customCreateZodDto } from '@app/core';
 
 export const updateMilestoneSchema = z.object({
   description: z.string().max(1024).optional(),

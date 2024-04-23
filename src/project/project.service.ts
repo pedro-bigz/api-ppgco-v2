@@ -2,7 +2,7 @@ import { Inject, Injectable } from '@nestjs/common';
 import { PROJECT_REPOSITORY } from './project.constants';
 import { Project } from './entities';
 import { CreateProjectDto, UpdateProjectDto } from './dto';
-import { AppListing, Query } from 'core';
+import { AppListing, Query } from '@app/core';
 
 @Injectable()
 export class ProjectService {

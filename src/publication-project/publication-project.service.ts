@@ -1,8 +1,11 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { PUBLICATION_PROJECT_REPOSITORY } from './publication-project.constants';
 import { PublicationProject } from './entities';
-import { CreatePublicationProjectDto, UpdatePublicationProjectDto } from './dto';
-import { AppListing, Query } from 'core';
+import {
+  CreatePublicationProjectDto,
+  UpdatePublicationProjectDto,
+} from './dto';
+import { AppListing, Query } from '@app/core';
 
 @Injectable()
 export class PublicationProjectService {
@@ -22,7 +25,9 @@ export class PublicationProjectService {
     searchIn: string = 'id',
     order: Record<string, 'ASC' | 'DESC'>,
   ) {
-    return AppListing.create<typeof PublicationProject>(this.publicationProjectModel)
+    return AppListing.create<typeof PublicationProject>(
+      this.publicationProjectModel,
+    )
       ?.attachPagination(page, perPage)
       ?.attachOrderObj(order || { id: 'DESC' })
       ?.attachSearch(search, searchIn)
@@ -39,11 +44,18 @@ export class PublicationProjectService {
   }
 
   public create(createPublicationProjectDto: CreatePublicationProjectDto) {
-    return this.publicationProjectModel.create({ ...createPublicationProjectDto });
+    return this.publicationProjectModel.create({
+      ...createPublicationProjectDto,
+    });
   }
 
-  public update(id: number, updatePublicationProjectDto: UpdatePublicationProjectDto) {
-    return this.publicationProjectModel.update(updatePublicationProjectDto, { where: { id } });
+  public update(
+    id: number,
+    updatePublicationProjectDto: UpdatePublicationProjectDto,
+  ) {
+    return this.publicationProjectModel.update(updatePublicationProjectDto, {
+      where: { id },
+    });
   }
 
   public remove(id: number) {

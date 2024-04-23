@@ -1,7 +1,7 @@
 import { z } from 'zod';
-import { isValid, toIsoString } from 'utils';
+import { isValid, toIsoString } from '@app/utils';
 import { ApiProperty } from '@nestjs/swagger';
-import { customCreateZodDto } from 'core';
+import { customCreateZodDto } from '@app/core';
 
 export const createStudentSchema = z.object({
   registration: z.string().max(50),

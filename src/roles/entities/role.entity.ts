@@ -12,7 +12,7 @@ import {
 } from 'sequelize-typescript';
 
 @DefaultScope(() => ({
-  include: [Permission],
+  // include: [Permission],
 }))
 @Table({ tableName: 'roles' })
 export class Role extends Model {

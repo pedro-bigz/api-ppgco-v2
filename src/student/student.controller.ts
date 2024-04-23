@@ -14,7 +14,7 @@ import {
   UpdateSuccessResponse,
   SwaggerSafeDelete,
   DeleteSuccessResponse,
-} from 'core';
+} from '@app/core';
 import { RequestUser, User } from '@app/user';
 import { Can } from '@app/permissions';
 import { StudentService } from './student.service';
