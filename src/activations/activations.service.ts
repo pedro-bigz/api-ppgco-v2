@@ -29,13 +29,13 @@ export class ActivationsService {
       throw new NotFoundException('Activation not found');
     }
 
-    const { email, ...data } = activation?.dataValues;
+    const { id, ...data } = activation?.dataValues;
 
     if (data.used) {
       throw new BadRequestException('This token has already been used');
     }
 
-    this.activationsModel.update({ ...data, used: true }, { where: { email } });
+    this.activationsModel.update({ ...data, used: true }, { where: { id } });
 
     return activation?.dataValues;
   }

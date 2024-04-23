@@ -22,15 +22,17 @@ import { ActivationsService } from 'src/activations';
 import { UserHasRolesService } from 'src/user-has-roles';
 import { awaitAll, PromisePusherCallback } from 'src/utils/promises';
 import { RolesService } from 'src/roles';
+import { Sequelize } from 'sequelize-typescript';
 
 @Injectable()
 export class UserService {
   public constructor(
     @Inject(USER_REPOSITORY)
     private readonly userModel: typeof User,
+    private readonly sequelize: Sequelize,
+    private readonly rolesService: RolesService,
     private readonly mailerService: MailerService,
     private readonly configService: ConfigService,
-    private readonly rolesService: RolesService,
     private readonly userHasRolesService: UserHasRolesService,
     private readonly activationsService: ActivationsService,
   ) {}
@@ -43,22 +45,29 @@ export class UserService {
       throw new UnauthorizedException('This email has already been registered');
     }
 
-    const user = await this.userModel.create({
-      ...createUserDto,
-      activated: 0,
-      forbidden: 0,
-      email,
-      password: bcrypt.hashSync(password, 10),
-    });
+    const user = await this.sequelize.transaction(async (t) => {
+      const user = await this.userModel.create(
+        {
+          ...createUserDto,
+          activated: 0,
+          forbidden: 0,
+          email,
+          password: bcrypt.hashSync(password, 10),
+        },
+        { transaction: t },
+      );
 
-    const roles = await this.rolesService.findByNameList(roleNames);
+      const roles = await this.rolesService.findByNameList(roleNames);
 
-    await awaitAll((add: PromisePusherCallback) => {
-      add(this.userHasRolesService.addRoleToUser(user, roles));
+      await awaitAll((add: PromisePusherCallback) => {
+        add(this.userHasRolesService.addRoleToUser(user, roles, t));
 
-      if (files) {
-        add(user.saveFiles(files));
-      }
+        if (files) {
+          add(user.saveFiles(files));
+        }
+      });
+
+      return user;
     });
 
     this.sendEmailVerification(user);

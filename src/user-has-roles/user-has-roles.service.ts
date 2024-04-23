@@ -6,6 +6,7 @@ import { UserHasRole } from './entities';
 import { CreateUserHasRolesDto, UpdateUserHasRolesDto } from './dto';
 import { User } from 'src/user/entities';
 import { Role } from 'src/roles';
+import { Attributes, BulkCreateOptions, Transaction } from 'sequelize';
 
 @Injectable()
 export class UserHasRolesService {
@@ -45,18 +46,27 @@ export class UserHasRolesService {
     return this.userHasRoleModel.create({ ...createUserHasRolesDto });
   }
 
-  public bulkCreate(createMultipleUserHasRolesDto: CreateUserHasRolesDto[]) {
+  public bulkCreate(
+    createMultipleUserHasRolesDto: CreateUserHasRolesDto[],
+    options?: BulkCreateOptions<Attributes<UserHasRole>>,
+  ) {
     return this.userHasRoleModel.bulkCreate(
       createMultipleUserHasRolesDto.map((item) => ({ ...item })),
+      options,
     );
   }
 
-  public async addRoleToUser(user: User, roles: Role[]) {
+  public async addRoleToUser(
+    user: User,
+    roles: Role[],
+    transaction?: Transaction | null,
+  ) {
     return this.bulkCreate(
       roles.map((role) => ({
         role_id: role.id,
         user_id: user.id,
       })),
+      { transaction },
     );
   }
 

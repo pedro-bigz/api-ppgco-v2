@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   Body,
   NotFoundException,
   Param,
@@ -31,21 +32,32 @@ import { COLLECTIONS } from './user.constants';
 export class UserController {
   public constructor(private readonly userService: UserService) {}
 
-  @SwaggerSafePost({ type: User })
+  @SwaggerSafePost({ path: 'upload-file', type: User })
   @UseMediaValidatorInterceotor(COLLECTIONS)
   uploadFileAndPassValidation(
-    @Body() createUserDto: any,
+    @RequestUser() user: User,
     @UploadedFiles(UploadedMediaValidationPipe(COLLECTIONS))
     files: Record<string, Express.Multer.File[]>,
   ) {
-    console.log(createUserDto);
+    if (!files) {
+      throw new BadRequestException('No files sent');
+    }
+    return user.saveFiles(files);
+  }
+
+  @SwaggerSafePost({ type: User })
+  @UseMediaValidatorInterceotor(COLLECTIONS)
+  createUser(
+    @Body(new ZodValidationPipe(createUserSchema)) createUserDto: any,
+    @UploadedFiles(UploadedMediaValidationPipe(COLLECTIONS))
+    files: Record<string, Express.Multer.File[]>,
+  ) {
     return this.userService.create(createUserDto, files);
   }
 
   @SwaggerSafeGet({ type: PaginatedUserDto })
   @Can('user.list')
   public findAll(
-    @RequestUser() user: User,
     @Query('page') page: string,
     @Query('perPage') perPage: string,
     @Query('search') search: string,
