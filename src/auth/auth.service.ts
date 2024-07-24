@@ -5,15 +5,25 @@ import {
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
-import * as bcrypt from 'bcryptjs';
+import bcrypt from 'bcryptjs';
+import _map from 'lodash/map';
+import _pick from 'lodash/pick';
+import { dayjs } from 'src/core';
 
-import { ENV } from '@app/core';
-import { UserService } from 'src/user';
+import { Permission, PermissionsService } from 'src/permissions';
+import { User, UserService } from 'src/user';
 
 type TokenType = {
   _id: number;
   email: string;
   name: string;
+};
+
+export type DecodedToken = {
+  _id: number;
+  email: string;
+  iat: number;
+  exp: number;
 };
 
 @Injectable()
@@ -22,10 +32,13 @@ export class AuthService {
     private readonly usersService: UserService,
     private readonly jwtService: JwtService,
     private readonly configService: ConfigService,
+    private readonly permissionService: PermissionsService,
   ) {}
 
   public async signIn(email: string, password: string): Promise<any> {
-    const user = await this.usersService.findByEmail(email);
+    const user = (await this.usersService.findByEmail(email)) as User & {
+      getPermissions: () => Promise<Permission[]>;
+    };
 
     if (!user) {
       throw new ForbiddenException();
@@ -34,6 +47,7 @@ export class AuthService {
     const {
       password: storedPassword,
       id: userId,
+      roles,
       ...userData
     } = user.dataValues;
 
@@ -61,13 +75,25 @@ export class AuthService {
     });
 
     const refreshToken = await this.jwtService.signAsync(payload, {
-      expiresIn: '1d',
+      expiresIn: '24h',
       secret: this.configService.get<string>('JWT_REFRESH_SECRET_KEY'),
     });
 
+    this.usersService.setLastLogin(user);
+
+    const permissions = await this.permissionService
+      .getUserPermissions(user)
+      .then((permissions: Permission[]) => {
+        return permissions.map(({ name }) => name);
+      });
+
     return {
       auth: { accessToken, refreshToken },
-      user: this.usersService.omitSensitiveData(user),
+      user: {
+        ...this.usersService.omitSensitiveData(user),
+        roles: _map(roles, 'name'),
+        permissions,
+      },
     };
   }
 
@@ -94,39 +120,31 @@ export class AuthService {
 
   public async refresh(requestBody: any) {
     const token = requestBody.refreshToken;
+    const secretKeys = {
+      access: this.configService.get<string>('JWT_SECRET_KEY'),
+      refresh: this.configService.get<string>('JWT_REFRESH_SECRET_KEY'),
+    };
 
-    const { _id, email, name } = await this.jwtService.verifyAsync<TokenType>(
-      token,
-      {
-        secret: this.configService.get<string>('JWT_REFRESH_SECRET_KEY'),
-      },
-    );
+    const payload = await this.jwtService.verifyAsync<TokenType>(token, {
+      secret: this.configService.get<string>('JWT_REFRESH_SECRET_KEY'),
+    });
 
-    const user = await this.usersService.findOne(_id);
+    const newPayload = _pick(payload, ['_id', 'email', 'name']);
 
-    if (!user) {
+    if (!(await this.usersService.exists(payload._id))) {
       throw new ForbiddenException();
     }
 
-    const payload = {
-      _id,
-      name,
-      email,
-    };
-
-    const accessToken = await this.jwtService.signAsync(payload, {
+    const accessToken = await this.jwtService.signAsync(newPayload, {
       expiresIn: '4h',
       secret: this.configService.get<string>('JWT_SECRET_KEY'),
     });
 
-    const refreshToken = await this.jwtService.signAsync(payload, {
+    const refreshToken = await this.jwtService.signAsync(newPayload, {
       expiresIn: '4h',
       secret: this.configService.get<string>('JWT_SECRET_KEY'),
     });
 
-    return {
-      auth: { accessToken, refreshToken },
-      user: this.usersService.omitSensitiveData(user),
-    };
+    return { auth: { accessToken, refreshToken } };
   }
 }

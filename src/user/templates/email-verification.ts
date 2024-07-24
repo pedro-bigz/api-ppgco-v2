@@ -4,6 +4,7 @@ export const emailVerificationTemplate = `
         <div>Olá <%= name %>,</div>
         <div>
             Seu cadastro foi efetuado com sucesso!<br />
+            \${ additionalData }
             <a href="\${ link }">
                 Clique aqui para ativar sua conta e acessar a plataforma.
             </a>

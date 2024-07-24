@@ -1,6 +1,6 @@
 import { z } from 'zod';
-import { isValid, toIsoString } from '@app/utils';
-import { customCreateZodDto } from '@app/core';
+import { isValid, toIsoString } from 'src/utils';
+import { customCreateZodDto } from 'src/core';
 
 export const createDisconnectedStudentSchema = z.object({
   reason: z

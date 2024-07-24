@@ -1,7 +1,7 @@
 import { Inject, Injectable } from '@nestjs/common';
 import _capitalize from 'lodash/capitalize';
-import { Op } from 'sequelize';
-import { AppListing, Query } from '@app/core';
+import { Includeable, Op } from 'sequelize';
+import { AppListing, OrderDto, Query } from 'src/core';
 import { ROLES_REPOSITORY } from './roles.constants';
 import { Role } from './entities';
 import { CreateRolesDto, UpdateRolesDto } from './dto';
@@ -13,8 +13,8 @@ export class RolesService {
     private readonly roleModel: typeof Role,
   ) {}
 
-  public findAll() {
-    return this.roleModel.findAll();
+  public findAll(...include: Includeable[]) {
+    return this.roleModel.findAll({ include });
   }
 
   public async find(
@@ -22,22 +22,22 @@ export class RolesService {
     perPage: number,
     search: string,
     searchIn: string = 'id',
-    order: Record<string, 'ASC' | 'DESC'>,
+    order: OrderDto[],
   ) {
-    return AppListing.create<typeof Role>(this.roleModel)
+    return AppListing.create<typeof Role, Role>(this.roleModel)
       ?.attachPagination(page, perPage)
-      ?.attachOrderObj(order || { id: 'DESC' })
+      ?.attachMultipleOrder(order || [['id', 'DESC']])
       ?.attachSearch(search, searchIn)
-      ?.modifyQuery((query: Query) => {
+      ?.modifyQuery((query: Query<Role>) => {
         return {
           ...query,
         };
       })
-      ?.get<Role>();
+      ?.get();
   }
 
-  public findOne(id: number) {
-    return this.roleModel.findOne({ where: { id } });
+  public findOne(id: number, ...include: Includeable[]) {
+    return this.roleModel.findOne({ where: { id }, include });
   }
 
   public create(createRolesDto: CreateRolesDto) {

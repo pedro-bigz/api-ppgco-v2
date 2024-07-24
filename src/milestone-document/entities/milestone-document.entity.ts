@@ -3,9 +3,11 @@ import {
   Table,
   Column,
   CreatedAt,
-  DeletedAt,
   UpdatedAt,
+  ForeignKey,
+  BelongsTo,
 } from 'sequelize-typescript';
+import { Milestone } from 'src/milestone/entities';
 
 @Table({ tableName: 'milestone_document' })
 export class MilestoneDocument extends Model {
@@ -19,6 +21,7 @@ export class MilestoneDocument extends Model {
   doc_name: string;
 
   @Column
+  @ForeignKey(() => Milestone)
   milestone_id: number;
 
   @CreatedAt
@@ -27,6 +30,6 @@ export class MilestoneDocument extends Model {
   @UpdatedAt
   updated_at: Date;
 
-  @DeletedAt
-  deleted_at: Date;
+  @BelongsTo(() => Milestone)
+  milestone: Milestone;
 }

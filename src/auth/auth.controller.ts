@@ -9,21 +9,28 @@ import {
   Head,
   UnauthorizedException,
 } from '@nestjs/common';
-import { ZodValidationPipe, SwaggerSafeController } from '@app/core';
+import { ApiOkResponse } from '@nestjs/swagger';
+import _map from 'lodash/map';
+import { ZodValidationPipe, SwaggerSafeController } from 'src/core';
+import { User } from 'src/user';
+import { Permission, PermissionsService } from 'src/permissions';
 import { AuthService } from './auth.service';
 import {
   LoginDto,
   loginSchema,
   AuthResponseDto,
   CheckTokenResponseDto,
+  refreshTokenSchema,
+  RefreshTokenDto,
 } from './dto';
 import { BearerToken, Public } from './auth.decorator';
-import { ApiOkResponse } from '@nestjs/swagger';
-import { User } from '@app/user';
 
 @SwaggerSafeController('auth')
 export class AuthController {
-  constructor(private authService: AuthService) {}
+  constructor(
+    private readonly authService: AuthService,
+    private readonly permissionService: PermissionsService,
+  ) {}
 
   @Public()
   @HttpCode(HttpStatus.OK)
@@ -42,8 +49,22 @@ export class AuthController {
     description: `This endpoint gets logged in user`,
     type: User,
   })
-  public getProfile(@Request() req: any) {
-    return req.user;
+  public async getProfile(@Request() req: any) {
+    const { user } = req;
+
+    const permissions = await this.permissionService
+      .getUserPermissions(user)
+      .then((permissions: Permission[]) => {
+        return permissions.map(({ name }) => name);
+      });
+
+    const { roles, ...userData } = user;
+
+    return {
+      ...userData,
+      permissions,
+      roles: _map(roles, 'name'),
+    };
   }
 
   @Public()
@@ -67,7 +88,9 @@ export class AuthController {
     description: `This endpoint updates access token`,
     type: AuthResponseDto,
   })
-  public refresh(@Body() body: any) {
+  public refresh(
+    @Body(new ZodValidationPipe(refreshTokenSchema)) body: RefreshTokenDto,
+  ) {
     return this.authService.refresh(body);
   }
 }

@@ -21,6 +21,10 @@
     "paths": {
       "src/*": ["./src/*"],
       "@app/*": ["./src/*"],
+      "@core": ["./src/core"],
+      "@utils": ["./src/utils"],
+      "@core/*": ["./src/core/*"],
+      "@utils/*": ["./src/utils/*"],
       "@dist/*": ["./dist/*"]
       // "@storage/*": ["./storage/*"]
     }

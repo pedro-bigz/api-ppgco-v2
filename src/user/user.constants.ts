@@ -3,7 +3,7 @@ export const COLLECTIONS = {
   avatar: {
     maxSize: 100 * 1024 * 1024,
     maxCount: 2,
-    required: true,
+    required: false,
     accepteds: ['image/*'],
   },
 };

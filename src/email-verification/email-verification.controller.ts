@@ -1,5 +1,5 @@
 import { Param } from '@nestjs/common';
-import { SwaggerSafeController, SwaggerSafeGet } from '@app/core';
+import { SwaggerSafeController, SwaggerSafeGet } from 'src/core';
 import { Public } from 'src/auth';
 import { EmailVerificationService } from './email-verification.service';
 import { EmailVerificationResponseDto } from './dto';

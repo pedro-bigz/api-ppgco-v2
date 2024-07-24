@@ -2,7 +2,7 @@ import { Inject, Injectable } from '@nestjs/common';
 import { RESEARCH_LINE_REPOSITORY } from './research-line.constants';
 import { ResearchLine } from './entities';
 import { CreateResearchLineDto, UpdateResearchLineDto } from './dto';
-import { AppListing, Query } from '@app/core';
+import { AppListing, OrderDto, Query } from 'src/core';
 
 @Injectable()
 export class ResearchLineService {
@@ -20,18 +20,20 @@ export class ResearchLineService {
     perPage: number,
     search: string,
     searchIn: string = 'id',
-    order: Record<string, 'ASC' | 'DESC'>,
+    order: OrderDto[],
   ) {
-    return AppListing.create<typeof ResearchLine>(this.researchLineModel)
+    return AppListing.create<typeof ResearchLine, ResearchLine>(
+      this.researchLineModel,
+    )
       ?.attachPagination(page, perPage)
-      ?.attachOrderObj(order || { id: 'DESC' })
+      ?.attachMultipleOrder(order || [['id', 'DESC']])
       ?.attachSearch(search, searchIn)
-      ?.modifyQuery((query: Query) => {
+      ?.modifyQuery((query: Query<ResearchLine>) => {
         return {
           ...query,
         };
       })
-      ?.get<ResearchLine>();
+      ?.get();
   }
 
   public findOne(id: number) {

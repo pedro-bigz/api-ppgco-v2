@@ -89,7 +89,7 @@ export class UploadedCollectionsValidation {
     files: Record<string, Express.Multer.File[]>,
   ) {
     return (validation: MediaCollectionMetadata, name: string) => {
-      const groupFiles = files[name] ?? [];
+      const groupFiles = files?.[name] ?? [];
 
       console.log({ files, name });
 

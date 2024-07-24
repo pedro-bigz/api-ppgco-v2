@@ -19,14 +19,16 @@ import {
   ModelFolderGenerator,
   DtoFolderGenerator,
 } from './generators';
-import { PermissionsService } from '@app/permissions';
-import { RoleHasPermissionsService } from '@app/role-has-permissions';
+import { PermissionsService } from 'src/permissions';
+import { RoleHasPermissionsService } from 'src/role-has-permissions';
+import { DtoPaginatedModelGenerator } from './generators/dto-paginated-model.generator';
 
 export type IndividualGenerateType =
   | 'model'
   | 'dto'
   | 'createDto'
   | 'updateDto'
+  | 'paginatedDto'
   | 'controller'
   | 'service';
 
@@ -39,6 +41,7 @@ export class CrudGeneratorService {
     private dtoIndexGenerator: DtoIndexGenerator,
     private dtoUpdateGenerator: DtoUpdateGenerator,
     private dtoCreateGenerator: DtoCreateGenerator,
+    private dtoPaginatedGenerator: DtoPaginatedModelGenerator,
     private constantsGenerator: ConstantsGenerator,
     private modelIndexGenerator: ModelIndexGenerator,
     private modelFolderGenerator: ModelFolderGenerator,
@@ -66,6 +69,7 @@ export class CrudGeneratorService {
       dto: this.generateDto,
       createDto: this.generateCreateDto,
       updateDto: this.generateUpdateDto,
+      paginatedDto: this.generatePaginatedDto,
       controller: this.generateController,
       service: this.generateService,
     };
@@ -105,6 +109,7 @@ export class CrudGeneratorService {
       this.dtoIndexGenerator,
       this.dtoCreateGenerator,
       this.dtoUpdateGenerator,
+      this.dtoPaginatedGenerator,
       this.moduleGenerator,
     ]);
   }
@@ -127,6 +132,15 @@ export class CrudGeneratorService {
     ]);
   }
 
+  public async generatePaginatedDto() {
+    this.makeQueue([
+      this.dtoFolderGenerator,
+      this.dtoIndexGenerator,
+      this.dtoUpdateGenerator,
+      this.moduleGenerator,
+    ]);
+  }
+
   public async generateController() {
     this.makeQueue([
       this.modelFolderGenerator,
@@ -139,6 +153,7 @@ export class CrudGeneratorService {
   }
 
   private generateAll() {
+    console.log('generate all');
     this.makeQueue([
       this.modelFolderGenerator,
       this.dtoFolderGenerator,
@@ -154,6 +169,7 @@ export class CrudGeneratorService {
       this.providersGenerator,
       this.dtoCreateGenerator,
       this.dtoUpdateGenerator,
+      this.dtoPaginatedGenerator,
     ]);
   }
 
@@ -177,7 +193,7 @@ export class CrudGeneratorService {
     const modules = ['index', 'list', 'create', 'update', 'delete'];
     const permissionsDto = modules.map((moduleName) => ({
       name: _kebabCase(tableName) + '.' + moduleName,
-      guard: 'admin',
+      guard_name: 'admin',
       created_at: new Date(),
       updated_at: new Date(),
     }));

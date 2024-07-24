@@ -6,40 +6,56 @@ import {
   SwaggerSafeDelete,
   SwaggerSafePatch,
   SwaggerSafePost,
-  UpdateSuccessResponse,
-} from '@app/core';
+  OrderDto,
+} from 'src/core';
 import { ProjectService } from './project.service';
 import {
   CreateProjectDto,
+  PaginatedProjectDto,
   UpdateProjectDto,
   createProjectSchema,
   updateProjectSchema,
-  PaginatedProjectDto,
 } from './dto';
-import { Can } from '@app/permissions';
+import { Can } from 'src/permissions';
 import { Permissions } from './project.enum';
 import { Project } from './entities';
+import { ProjectHasCoadvisorService } from 'src/project-has-coadvisor';
 
-@SwaggerSafeController('project')
+@SwaggerSafeController('projects')
 export class ProjectController {
-  public constructor(private readonly projectService: ProjectService) {}
+  public constructor(
+    private readonly projectService: ProjectService,
+    private readonly projectHasCoadvisorService: ProjectHasCoadvisorService,
+  ) {}
 
-  @SwaggerSafeGet({ type: Project, isPaginated: true })
+  @SwaggerSafeGet({ type: PaginatedProjectDto })
   @Can(Permissions.List)
   public findAll(
     @Query('page') page: string,
     @Query('perPage') perPage: string,
     @Query('search') search: string,
     @Query('searchIn') searchIn: string,
-    @Query('order') order: Record<string, 'ASC' | 'DESC'>,
+    @Query('orderBy') order: OrderDto[],
   ) {
     return this.projectService.find(+page, +perPage, search, searchIn, order);
   }
 
   @SwaggerSafeGet({ path: ':id', type: Project })
-  @Can(Permissions.Index)
+  @Can(Permissions.Read)
   public findOne(@Param('id') id: string) {
     return this.projectService.findOne(+id);
+  }
+
+  @SwaggerSafeGet({ path: ':id/coadvisors', type: Project })
+  @Can(Permissions.Read)
+  public async findCoadvisors(@Param('id') id: string) {
+    return this.projectHasCoadvisorService
+      .findFrom(+id)
+      .then((projectHasCoadvisors) =>
+        projectHasCoadvisors.map((projectHasCoadvisor) => {
+          return projectHasCoadvisor?.dataValues?.advisor;
+        }),
+      );
   }
 
   @SwaggerSafePost({ type: Project })

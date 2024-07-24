@@ -8,12 +8,16 @@ import {
   Body,
   Query,
   Param,
-  Get,
-  Patch,
-  Post,
-  Delete,
 } from '@nestjs/common';
-import { ZodValidationPipe, SwaggerSafeController } from 'core';
+import {
+  OrderDto,
+  ZodValidationPipe,
+  SwaggerSafeController,
+  SwaggerSafeGet,
+  SwaggerSafePost,
+  SwaggerSafePatch,
+  SwaggerSafeDelete,
+} from 'src/core';
 import { <%= service.className %> } from './<%= service.path %>';
 import {
   <%= dto.create.type %>,
@@ -21,28 +25,29 @@ import {
   <%= schema.create %>,
   <%= schema.update %>,
 } from './dto';
+import { <%= modelClassName %> } from './entities';
 
 @SwaggerSafeController('<%= routePreffix %>')
 export class <%= controllerClassName %> {
   public constructor(private readonly <%= service.name %>: <%= service.className %>) {}
 
-  @Get()
+  @SwaggerSafeGet({ type: <%= modelClassName %> })
   public findAll(
     @Query('page') page: string,
     @Query('perPage') perPage: string,
     @Query('search') search: string,
     @Query('searchIn') searchIn: string,
-    @Query('order') order: Record<string, 'ASC' | 'DESC'>,
+    @Query('orderBy') order: OrderDto[],
   ) {
     return this.<%= service.name %>.find(+page, +perPage, search, searchIn, order);
   }
 
-  @Get(':id')
+  @SwaggerSafeGet({ path: ':id', type: <%= modelClassName %> })
   public findOne(@Param('id') id: string) {
     return this.<%= service.name %>.findOne(+id);
   }
 
-  @Post()
+  @SwaggerSafePost({ type: <%= modelClassName %> })
   public create(
     @Body(new ZodValidationPipe(<%= schema.create %>))
     <%= dto.create.name %>: <%= dto.create.type %>,
@@ -50,18 +55,26 @@ export class <%= controllerClassName %> {
     return this.<%= service.name %>.create(<%= dto.create.name %>);
   }
 
-  @Patch(':id')
-  public update(
+  @SwaggerSafePatch({ path: ':id' })
+  public async update(
     @Param('id') id: string,
     @Body(new ZodValidationPipe(<%= schema.update %>))
     <%= dto.update.name %>: <%= dto.update.type %>,
   ) {
-    return this.<%= service.name %>.update(+id, <%= dto.update.name %>);
+    const [updateds] = await this.<%= service.name %>.update(+id, <%= dto.update.name %>);
+    return {
+      updateds,
+      message: 'Item atualizado com sucesso',
+    }
   }
 
-  @Delete(':id')
-  public destroy(@Param('id') id: string) {
-    return this.<%= service.name %>.remove(+id);
+  @SwaggerSafeDelete({ path: ':id' })
+  public async destroy(@Param('id') id: string) {
+    const deleteds = await this.<%= service.name %>.remove(+id);
+    return {
+      deleteds,
+      message: 'Item deletado com sucesso',
+    }
   }
 }`,
     )

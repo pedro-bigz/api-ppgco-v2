@@ -5,7 +5,7 @@ import {
   CreatePublicationProjectDto,
   UpdatePublicationProjectDto,
 } from './dto';
-import { AppListing, Query } from '@app/core';
+import { AppListing, OrderDto, Query } from 'src/core';
 
 @Injectable()
 export class PublicationProjectService {
@@ -23,20 +23,20 @@ export class PublicationProjectService {
     perPage: number,
     search: string,
     searchIn: string = 'id',
-    order: Record<string, 'ASC' | 'DESC'>,
+    order: OrderDto[],
   ) {
-    return AppListing.create<typeof PublicationProject>(
+    return AppListing.create<typeof PublicationProject, PublicationProject>(
       this.publicationProjectModel,
     )
       ?.attachPagination(page, perPage)
-      ?.attachOrderObj(order || { id: 'DESC' })
+      ?.attachMultipleOrder(order || [['id', 'DESC']])
       ?.attachSearch(search, searchIn)
-      ?.modifyQuery((query: Query) => {
+      ?.modifyQuery((query: Query<PublicationProject>) => {
         return {
           ...query,
         };
       })
-      ?.get<PublicationProject>();
+      ?.get();
   }
 
   public findOne(id: number) {

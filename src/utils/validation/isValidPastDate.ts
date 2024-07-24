@@ -1,4 +1,4 @@
-import { dayjs } from '@app/core';
+import { dayjs } from 'src/core';
 import { now } from 'lodash';
 
 export function isValidPastDate(dateStr?: string | unknown, format?: string) {

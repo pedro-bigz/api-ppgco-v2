@@ -1,23 +1,19 @@
 import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common';
 import { PERMISSION_KEY } from './permissions.decorator';
-import { AuthGuard } from '@app/auth';
-import { UserService } from '@app/user';
 import { ConfigService } from '@nestjs/config';
 import { Reflector } from '@nestjs/core';
-import { JwtService } from '@nestjs/jwt';
-import { Role } from '@app/roles';
-import { Permission } from './entities';
+import { Role } from 'src/roles';
+import { PermissionsService } from './permissions.service';
+import { RoleHasPermissionsService } from 'src/role-has-permissions';
 
 @Injectable()
 export class PermissionGuard implements CanActivate {
   public constructor(
     protected readonly reflector: Reflector,
     protected readonly configService: ConfigService,
+    protected readonly permissionsService: PermissionsService,
+    protected readonly roleHasPermissionsService: RoleHasPermissionsService,
   ) {}
-
-  static create() {
-    return new PermissionGuard(new Reflector(), new ConfigService());
-  }
 
   public async canActivate(context: ExecutionContext): Promise<boolean> {
     const [permissionName, guardName] = this.reflector.getAllAndMerge<string[]>(
@@ -35,19 +31,18 @@ export class PermissionGuard implements CanActivate {
       return true;
     }
 
-    const storedPermissions = request.user.roles.reduce(
-      (accum: Permission[], role: Role) => [
-        ...accum,
-        ...role.dataValues.permissions,
-      ],
-      [],
+    const permission = await this.permissionsService.findByName(
+      permissionName,
+      guardName,
     );
 
-    return storedPermissions.some((permission: Permission) => {
-      return (
-        permission.dataValues.name === permissionName &&
-        permission.dataValues.guard_name === guardName
-      );
-    });
+    if (!permission) {
+      throw new Error('Permission not found');
+    }
+
+    return this.roleHasPermissionsService.hasPermissions(
+      request.user.roles.map((role: Role) => role.id),
+      permission.dataValues.id,
+    );
   }
 }

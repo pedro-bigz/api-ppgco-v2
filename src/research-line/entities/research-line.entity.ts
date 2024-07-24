@@ -13,7 +13,10 @@ export class ResearchLine extends Model {
   id: number;
 
   @Column
-  title: number;
+  title: string;
+
+  @Column
+  description: string;
 
   @CreatedAt
   created_at: Date;

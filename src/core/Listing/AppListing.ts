@@ -1,28 +1,41 @@
-import { Model as SequelizeModel } from 'sequelize';
-import { insensitiveLike } from '@app/utils';
+import { Model, ModelStatic, FindAndCountOptions, Order } from 'sequelize';
+import { Type } from '@nestjs/common';
+import _last from 'lodash/last';
+import _omit from 'lodash/omit';
+import _camelCase from 'lodash/camelCase';
+import _isEmpty from 'lodash/isEmpty';
+import _reduce from 'lodash/reduce';
+import _trim from 'lodash/trim';
+import { insensitiveLike } from 'src/utils';
 import {
-  Model,
+  OrderDto,
   PaginaginatedListingPromise,
+  WhereOptions,
   QueryModifierCallback,
+  Filters,
+  FilterData,
 } from './types';
+import { arrayOperators, Op, Operations } from './Operations';
 
-export class AppListing<T extends Model> {
+export class AppListing<T extends Type & ModelStatic<Model>, M extends Model> {
   private page: number;
   private perPage: number;
-  private orders: [string, 'ASC' | 'DESC'][] = [];
+  private orders: Order[] = [];
   private search: string;
   private searchIn: string;
-  private queryModifier: QueryModifierCallback;
+  private filters: Filters;
+  private queryModifier: QueryModifierCallback<T, M>;
 
   public static defaultPage = 1;
   public static defaultPerPage = 10;
 
   public constructor(private readonly model: T) {}
 
-  public static create<T extends Model>(model: T | string) {
-    const modelInstance =
-      typeof model === 'string' ? eval(`new ${model}()`) : model;
-    return new AppListing<T>(modelInstance);
+  public static create<T extends Type & ModelStatic<Model>, M extends Model>(
+    model: T | string,
+  ) {
+    const modelInstance = typeof model === 'string' ? eval(model) : model;
+    return new AppListing<T, M>(modelInstance);
   }
 
   public attachPagination(page: number, perPage: number) {
@@ -39,41 +52,58 @@ export class AppListing<T extends Model> {
   }
 
   public attachOrder(orderBy: string, orderDirection: 'ASC' | 'DESC') {
-    this.orders.push([orderBy, orderDirection]);
+    this.orders.push([...orderBy.split('.'), orderDirection]);
 
     return this;
+  }
+
+  private resolveOrderEntry(order: OrderDto[]) {
+    return order.map(([col, value]) => {
+      return [...col.split('.'), value];
+    }) as Order[];
   }
 
   public attachOrderObj(order: Record<string, 'ASC' | 'DESC'>) {
-    const entries = Object.entries(order);
+    if (_isEmpty(order)) return;
 
-    if (!entries || !entries.length) return;
-
-    this.orders.push(entries[0]);
+    this.orders = [
+      ...this.orders,
+      ...this.resolveOrderEntry(Object.entries(order)),
+    ];
 
     return this;
   }
 
-  public attachMultipleOrder(order: [string, 'ASC' | 'DESC'][]) {
-    this.orders = order;
+  public attachMultipleOrder(order: OrderDto[]) {
+    this.orders = this.resolveOrderEntry(order);
 
     return this;
   }
 
   public attachSearch(search: string, searchIn: string) {
     this.search = search;
-    this.searchIn = searchIn;
+    this.searchIn = this.formatColumnName(searchIn);
 
     return this;
   }
 
-  public modifyQuery(queryModifier: QueryModifierCallback) {
+  public attachFilters(filters: Filters) {
+    this.filters = filters;
+
+    return this;
+  }
+
+  public formatColumnName(name: string) {
+    return name.includes('.') ? name : this.model.name + '.' + name;
+  }
+
+  public modifyQuery(queryModifier: QueryModifierCallback<T, M>) {
     this.queryModifier = queryModifier;
 
     return this;
   }
 
-  private buildPagination() {
+  public buildPagination() {
     if (isNaN(this.page)) this.page = AppListing.defaultPage;
     if (isNaN(this.perPage)) this.perPage = AppListing.defaultPerPage;
 
@@ -86,7 +116,7 @@ export class AppListing<T extends Model> {
     };
   }
 
-  private buildSearch() {
+  public buildSearch() {
     const search =
       !this.search || !this.searchIn
         ? {}
@@ -97,36 +127,98 @@ export class AppListing<T extends Model> {
     return { search };
   }
 
-  private buildOrder() {
+  public buildFilter(filter: FilterData, column: string) {
+    if (!filter.operator) {
+      return { [column]: { [Op.eq]: filter.content[0] } };
+    }
+
+    if (arrayOperators.includes(filter.operator)) {
+      return { [column]: { [Op[filter.operator]]: filter.content } };
+    }
+
+    if (filter.operator === Operations.notContains) {
+      return { [column]: { [Op[filter.operator]]: `%${filter.content}%` } };
+    }
+
+    if (filter.operator === Operations.in) {
+      return {
+        [column]: {
+          [Op[filter.operator]]: filter.content[0]
+            .split(',')
+            .map((content: string) => {
+              const value = _trim(content);
+
+              if (isNaN(+value)) {
+                return value;
+              }
+
+              return +value;
+            }),
+        },
+      };
+    }
+
+    return { [column]: { [Op[filter.operator]]: filter.content[0] } };
+  }
+
+  public buildFilters() {
+    const formatFilters = (accum: any, filter: FilterData, key: string) => {
+      return { ...accum, ...this.buildFilter(filter, key) };
+    };
+
+    return { filters: _reduce(this.filters, formatFilters, {}) };
+  }
+
+  public buildOrder() {
     const order = this.orders;
     return { order };
   }
 
-  private buildQuery() {
+  public mergeSearchWithFilters(filters: any, search: any) {
+    if (this.searchIn in filters && this.searchIn in search) {
+      return {
+        ..._omit(filters, this.searchIn),
+        ..._omit(search, this.searchIn),
+        [Op.and]: [
+          { [this.searchIn]: search[this.searchIn] },
+          { [this.searchIn]: filters[this.searchIn] },
+        ],
+      };
+    }
+
+    return { ...filters, ...search };
+  }
+
+  public buildQuery() {
     const { offset, limit } = this.buildPagination();
+    const { filters } = this.buildFilters();
     const { search } = this.buildSearch();
     const { order } = this.buildOrder();
 
-    const searchQuery = { where: { ...search }, offset, limit, order };
+    const searchQuery = {
+      where: this.mergeSearchWithFilters(filters, search) as WhereOptions<M>,
+      order: order as Order,
+      offset,
+      limit,
+    };
+
     const modifiedQuery = this?.queryModifier
-      ? this.queryModifier(searchQuery)
+      ? this.queryModifier(searchQuery, this)
       : searchQuery;
 
     return modifiedQuery;
   }
 
-  private prepare<M extends SequelizeModel>(columns?: string[]) {
+  private prepare(columns?: string[]) {
     const query = this.buildQuery();
     return this.model.findAndCountAll<M>({
-      ...query,
       attributes: columns,
-    });
+      ...query,
+    } as FindAndCountOptions);
   }
 
-  public async get<M extends SequelizeModel>(
-    columns?: string[],
-  ): PaginaginatedListingPromise<M> {
-    const { count: totalItems, rows: data } = await this.prepare<M>(columns);
+  public async get(columns?: string[]): PaginaginatedListingPromise<M> {
+    const { count: totalItems, rows: data } = await this.prepare(columns);
     const totalPages = Math.ceil(totalItems / this.perPage);
 
     const result = {

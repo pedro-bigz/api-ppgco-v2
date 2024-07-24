@@ -1,6 +1,6 @@
 import { Patch as NestPatch, applyDecorators } from '@nestjs/common';
 import { ApiOkResponse } from '@nestjs/swagger';
-import { UpdateSuccessResponse } from '@app/core/Common';
+import { UpdateSuccessResponse } from 'src/core/Common';
 import _capitalize from 'lodash/capitalize';
 import { SwaggerSafeOptions } from './types';
 import { getResponseType } from './utils';

@@ -2,7 +2,7 @@ import { Inject, Injectable } from '@nestjs/common';
 import { DISCONNECTED_STUDENT_REPOSITORY } from './disconnected-student.constants';
 import { DisconnectedStudent } from './entities';
 import { CreateDisconnectedStudentDto } from './dto';
-import { AppListing, Query } from '@app/core';
+import { AppListing, OrderDto, Query } from 'src/core';
 
 @Injectable()
 export class DisconnectedStudentService {
@@ -20,20 +20,20 @@ export class DisconnectedStudentService {
     perPage: number,
     search: string,
     searchIn: string = 'student_id',
-    order: Record<string, 'ASC' | 'DESC'>,
+    order: OrderDto[],
   ) {
-    return AppListing.create<typeof DisconnectedStudent>(
+    return AppListing.create<typeof DisconnectedStudent, DisconnectedStudent>(
       this.disconnectedStudentModel,
     )
       ?.attachPagination(page, perPage)
-      ?.attachOrderObj(order || { student_id: 'DESC' })
+      ?.attachMultipleOrder(order || [['student_id', 'DESC']])
       ?.attachSearch(search, searchIn)
-      ?.modifyQuery((query: Query) => {
+      ?.modifyQuery((query: Query<DisconnectedStudent>) => {
         return {
           ...query,
         };
       })
-      ?.get<DisconnectedStudent>();
+      ?.get();
   }
 
   public findOne(student_id: number) {

@@ -69,7 +69,7 @@ export class ModulePathHelper extends PathHelper {
     return this.resolveFileName(path, 'model');
   }
 
-  public resolveDtosPath(preffix: 'create' | 'update') {
+  public resolveDtosPath(preffix: 'create' | 'update' | 'paginated') {
     const path = this.concat(
       this.getSrcFolder('dto'),
       this.resolveDtoFilename(preffix),
@@ -78,7 +78,7 @@ export class ModulePathHelper extends PathHelper {
     return path;
   }
 
-  public resolveDtoFilename(preffix: 'create' | 'update') {
+  public resolveDtoFilename(preffix: 'create' | 'update' | 'paginated') {
     const radical = this.getSingular(this.getModuleName());
     const filename = this.resolveFileName(preffix + '-' + radical, 'dto');
 

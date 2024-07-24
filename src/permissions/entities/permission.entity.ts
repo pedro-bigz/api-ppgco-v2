@@ -1,10 +1,13 @@
 import {
   Column,
   CreatedAt,
+  HasMany,
   Model,
   Table,
   UpdatedAt,
 } from 'sequelize-typescript';
+import { RoleHasPermission } from 'src/role-has-permissions';
+import { UserHasPermission } from 'src/user-has-permissions';
 
 @Table({ tableName: 'permissions' })
 export class Permission extends Model {
@@ -22,4 +25,10 @@ export class Permission extends Model {
 
   @UpdatedAt
   updated_at: Date;
+
+  @HasMany(() => RoleHasPermission)
+  roleHasPermission: RoleHasPermission;
+
+  @HasMany(() => UserHasPermission)
+  userHasPermission: UserHasPermission;
 }

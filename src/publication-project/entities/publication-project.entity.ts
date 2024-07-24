@@ -1,5 +1,3 @@
-import { Project } from '@app/project';
-import { Publication } from '@app/publication/entities';
 import {
   BelongsTo,
   Column,
@@ -9,6 +7,8 @@ import {
   Table,
   UpdatedAt,
 } from 'sequelize-typescript';
+import { Project } from 'src/project/entities';
+import { Publication } from 'src/publication/entities';
 
 @Table({ tableName: 'publication_project' })
 export class PublicationProject extends Model {

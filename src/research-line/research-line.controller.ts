@@ -1,4 +1,4 @@
-import { Body, Query, Param, Get, Patch, Post, Delete } from '@nestjs/common';
+import { Body, Query, Param } from '@nestjs/common';
 import {
   ZodValidationPipe,
   SwaggerSafeController,
@@ -6,32 +6,34 @@ import {
   SwaggerSafePost,
   SwaggerSafePatch,
   SwaggerSafeDelete,
-} from '@app/core';
+  OrderDto,
+} from 'src/core';
 import { ResearchLineService } from './research-line.service';
 import {
   CreateResearchLineDto,
-  PaginatedResearchLineDto,
   UpdateResearchLineDto,
   createResearchLineSchema,
   updateResearchLineSchema,
 } from './dto';
-import { Can } from '@app/permissions';
+import { Can } from 'src/permissions';
 import { ResearchLine } from './entities';
+import { PaginatedResearchLineDto } from './dto/paginated-research-line.dto';
+import { Permissions } from './research-line.enum';
 
-@SwaggerSafeController('research-line')
+@SwaggerSafeController('research-lines')
 export class ResearchLineController {
   public constructor(
     private readonly researchLineService: ResearchLineService,
   ) {}
 
   @SwaggerSafeGet({ type: PaginatedResearchLineDto })
-  @Can('research-line.list')
+  @Can(Permissions.List)
   public findAll(
     @Query('page') page: string,
     @Query('perPage') perPage: string,
     @Query('search') search: string,
     @Query('searchIn') searchIn: string,
-    @Query('order') order: Record<string, 'ASC' | 'DESC'>,
+    @Query('orderBy') order: OrderDto[],
   ) {
     return this.researchLineService.find(
       +page,
@@ -43,13 +45,13 @@ export class ResearchLineController {
   }
 
   @SwaggerSafeGet({ path: ':id', type: ResearchLine })
-  @Can('research-line.index')
+  @Can(Permissions.Read)
   public findOne(@Param('id') id: string) {
     return this.researchLineService.findOne(+id);
   }
 
   @SwaggerSafePost({ type: ResearchLine })
-  @Can('research-line.create')
+  @Can(Permissions.Create)
   public create(
     @Body(new ZodValidationPipe(createResearchLineSchema))
     createResearchLineDto: CreateResearchLineDto,
@@ -58,7 +60,7 @@ export class ResearchLineController {
   }
 
   @SwaggerSafePatch({ path: ':id' })
-  @Can('research-line.update')
+  @Can(Permissions.Update)
   public update(
     @Param('id') id: string,
     @Body(new ZodValidationPipe(updateResearchLineSchema))
@@ -68,7 +70,7 @@ export class ResearchLineController {
   }
 
   @SwaggerSafeDelete({ path: ':id' })
-  @Can('research-line.delete')
+  @Can(Permissions.Delete)
   public destroy(@Param('id') id: string) {
     return this.researchLineService.remove(+id);
   }

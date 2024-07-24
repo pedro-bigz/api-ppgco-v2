@@ -1,5 +1,5 @@
 export enum Permissions {
   List = 'disconnected-student.list',
-  Index = 'disconnected-student.index',
+  Read = 'disconnected-student.read',
   Create = 'disconnected-student.create',
 }

@@ -3,7 +3,7 @@ import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
 import { UserModule } from 'src/user/user.module';
 import { authProviders } from './auth.providers';
-import { PermissionsModule } from '@app/permissions';
+import { PermissionsModule } from 'src/permissions';
 
 @Module({
   imports: [UserModule, PermissionsModule],

@@ -9,6 +9,7 @@ export interface SwaggerSafeGetOptions extends SwaggerSafeOptions {
 }
 
 export const SwaggerSafeGet = (props?: SwaggerSafeGetOptions) => {
+  const { isPaginated = false } = props ?? {};
   const options = {
     ...props?.options,
     ...prepareTypeOptions(getResponseType(props?.options, props?.type)),
@@ -16,8 +17,8 @@ export const SwaggerSafeGet = (props?: SwaggerSafeGetOptions) => {
 
   return applyDecorators(
     ApiOkResponse({
-      description: `This endpoint gets records in the database`,
       ...options,
+      description: `This endpoint gets records in the database`,
     }),
     NestGet(props?.path),
   );

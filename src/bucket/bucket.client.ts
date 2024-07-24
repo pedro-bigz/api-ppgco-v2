@@ -5,13 +5,10 @@ import {
   BucketHelpers,
   BucketHttp,
   REMOTE_BUCKET,
-} from '@app/bucket';
-import {
-  BucketFileApi,
-  BucketFileApiInterface,
-} from '@app/bucket/bucket-files';
+} from 'src/bucket';
+import { BucketFileApi, BucketFileApiInterface } from 'src/bucket/bucket-files';
 import { BucketClientConfig } from './bucket.types';
-import { MagicMethods } from '@app/core';
+import { MagicMethods } from 'src/core';
 
 interface BucketClientInterface {
   bucket: BucketApi;

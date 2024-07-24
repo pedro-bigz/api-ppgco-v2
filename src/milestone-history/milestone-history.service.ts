@@ -2,7 +2,7 @@ import { Inject, Injectable } from '@nestjs/common';
 import { MILESTONE_HISTORY_REPOSITORY } from './milestone-history.constants';
 import { MilestoneHistory } from './entities';
 import { CreateMilestoneHistoryDto, UpdateMilestoneHistoryDto } from './dto';
-import { AppListing, Query } from '@app/core';
+import { AppListing, OrderDto, Query } from 'src/core';
 
 @Injectable()
 export class MilestoneHistoryService {
@@ -20,20 +20,20 @@ export class MilestoneHistoryService {
     perPage: number,
     search: string,
     searchIn: string = 'id',
-    order: Record<string, 'ASC' | 'DESC'>,
+    order: OrderDto[],
   ) {
-    return AppListing.create<typeof MilestoneHistory>(
+    return AppListing.create<typeof MilestoneHistory, MilestoneHistory>(
       this.milestoneHistoryModel,
     )
       ?.attachPagination(page, perPage)
-      ?.attachOrderObj(order || { id: 'DESC' })
+      ?.attachMultipleOrder(order || [['id', 'DESC']])
       ?.attachSearch(search, searchIn)
-      ?.modifyQuery((query: Query) => {
+      ?.modifyQuery((query: Query<MilestoneHistory>) => {
         return {
           ...query,
         };
       })
-      ?.get<MilestoneHistory>();
+      ?.get();
   }
 
   public findOne(id: number) {

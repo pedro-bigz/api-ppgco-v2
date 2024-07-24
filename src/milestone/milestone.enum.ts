@@ -1,6 +1,6 @@
 export enum Permissions {
   List = 'milestone.list',
-  Index = 'milestone.index',
+  Read = 'milestone.read',
   Create = 'milestone.create',
   Update = 'milestone.update',
   Delete = 'milestone.delete',

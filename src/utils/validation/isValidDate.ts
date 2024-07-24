@@ -1,4 +1,4 @@
-import { dayjs } from '@app/core';
+import { dayjs } from 'src/core';
 
 export function isValidDate(date?: string | unknown, format?: string) {
   if (typeof date !== 'string' || date?.length < 10) {

@@ -9,10 +9,8 @@ import { Reflector } from '@nestjs/core';
 import { JwtService } from '@nestjs/jwt';
 import { Request } from 'express';
 import { IS_PUBLIC_KEY } from './auth.decorator';
-import { ENV } from '@app/core';
-import { UserService } from '@app/user';
+import { UserService } from 'src/user';
 import { ConfigService } from '@nestjs/config';
-import { PERMISSION_KEY } from '@app/permissions';
 
 export type UserPayload = {
   _id: number;

@@ -2,7 +2,7 @@ import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { SequelizeModule } from '@nestjs/sequelize';
 import { JwtModule } from '@nestjs/jwt';
-import { ENV, SequelizeConfig } from '@app/core';
+import { ENV, SequelizeConfig } from 'src/core';
 import { AuthService, AuthController, AuthModule } from './auth';
 import { User, UserModule } from './user';
 import { CrudGeneratorModule, crudGeneratorCommands } from './crud-generator';
@@ -40,33 +40,61 @@ import { MediaModule, Media } from './media';
 import { MailerModule } from './mailer';
 import { Activation, ActivationsModule } from './activations';
 import { EmailVerificationModule } from './email-verification';
+import { CoursesModule, Course } from './courses';
+import { SubjectsModule, Subject } from './subjects';
+import { SystemApliancesModule, SystemApliance } from './system-apliances';
+import {
+  UserHasPermissionsModule,
+  UserHasPermission,
+} from './user-has-permissions';
+import { DocumentsModule, Document } from './documents';
+import {
+  MilestoneSituationModule,
+  MilestoneSituation,
+} from './milestone-situation';
+import { DefaultMilestonesModule } from './default-milestones/default-milestones.module';
+import {
+  NotificationsModule,
+  Notification,
+  NotificationUsers,
+} from './notifications';
 // {IMPORTS} Don't delete me, I'm used for automatic code generation
 
 const env = ENV();
 const orm = {
   tables: [
     User,
-    Student,
     Milestone,
     MilestoneDocument,
     Project,
+    Publication,
+    PublicationProject,
+    Student,
     Advisor,
     ResearchLine,
     DisconnectedStudent,
     MilestoneHistory,
-    Publication,
-    PublicationProject,
     ProjectHasCoadvisor,
     Role,
     UserHasRole,
+    UserHasPermission,
     RoleHasPermission,
     Permission,
     Media,
     Activation,
+    Course,
+    Subject,
+    SystemApliance,
+    Document,
+    MilestoneSituation,
+    Notification,
+    NotificationUsers,
     // {MODELS} Don't delete me, I'm used for automatic code generation
   ],
   views: [],
 };
+
+console.log({ orm });
 
 @Module({
   imports: [
@@ -83,16 +111,16 @@ const orm = {
     }),
     UserModule,
     AuthModule,
+    ProjectModule,
     CrudGeneratorModule,
+    PublicationModule,
     StudentModule,
     MilestoneModule,
     MilestoneDocumentModule,
-    ProjectModule,
     AdvisorModule,
     ResearchLineModule,
     DisconnectedStudentModule,
     MilestoneHistoryModule,
-    PublicationModule,
     PublicationProjectModule,
     ProjectHasCoadvisorModule,
     RolesModule,
@@ -103,6 +131,14 @@ const orm = {
     MailerModule,
     ActivationsModule,
     EmailVerificationModule,
+    CoursesModule,
+    SubjectsModule,
+    SystemApliancesModule,
+    UserHasPermissionsModule,
+    DocumentsModule,
+    MilestoneSituationModule,
+    DefaultMilestonesModule,
+    NotificationsModule,
     // {MODULE} Don't delete me, I'm used for automatic code generation
   ],
   controllers: [AuthController],

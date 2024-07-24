@@ -1,4 +1,10 @@
-import { Body, Query, Param } from '@nestjs/common';
+import {
+  Body,
+  Query,
+  Param,
+  BadRequestException,
+  InternalServerErrorException,
+} from '@nestjs/common';
 import {
   ZodValidationPipe,
   SwaggerSafeController,
@@ -6,7 +12,8 @@ import {
   SwaggerSafePost,
   SwaggerSafePatch,
   SwaggerSafeDelete,
-} from '@app/core';
+  OrderDto,
+} from 'src/core';
 import {
   CreatePublicationDto,
   PaginatedPublicationDto,
@@ -14,23 +21,27 @@ import {
   createPublicationSchema,
   updatePublicationSchema,
 } from './dto';
-import { Can } from '@app/permissions';
+import { Can } from 'src/permissions';
 import { PublicationService } from './publication.service';
 import { Permissions } from './publication.enum';
 import { Publication } from './entities';
+import { RequestUser, User } from 'src/user';
+import { ROLES } from 'src/roles';
+import { StudentService } from 'src/student';
 
 @SwaggerSafeController('publication')
 export class PublicationController {
   public constructor(private readonly publicationService: PublicationService) {}
 
-  @SwaggerSafeGet({ type: PaginatedPublicationDto, isPaginated: true })
+  @SwaggerSafeGet({ type: PaginatedPublicationDto })
   @Can(Permissions.List)
   public findAll(
+    @RequestUser() user: User,
     @Query('page') page: string,
     @Query('perPage') perPage: string,
     @Query('search') search: string,
     @Query('searchIn') searchIn: string,
-    @Query('order') order: Record<string, 'ASC' | 'DESC'>,
+    @Query('orderBy') order: OrderDto[],
   ) {
     return this.publicationService.find(
       +page,
@@ -38,22 +49,38 @@ export class PublicationController {
       search,
       searchIn,
       order,
+      user,
     );
   }
 
   @SwaggerSafeGet({ path: ':id', type: Publication })
-  @Can(Permissions.Index)
+  @Can(Permissions.Read)
   public findOne(@Param('id') id: string) {
     return this.publicationService.findOne(+id);
   }
 
   @SwaggerSafePost({ type: Publication })
   @Can(Permissions.Create)
-  public create(
+  public async create(
+    @RequestUser() user: User,
     @Body(new ZodValidationPipe(createPublicationSchema))
-    createPublicationDto: CreatePublicationDto,
+    { project_ids, ...createPublicationDto }: CreatePublicationDto,
   ) {
-    return this.publicationService.create(createPublicationDto);
+    if (user.is(ROLES.Student)) {
+      return this.publicationService.createForStudentUser(
+        user,
+        createPublicationDto,
+      );
+    }
+
+    if (!project_ids.length) {
+      throw new BadRequestException('O campo de Projetos é obrigatório');
+    }
+
+    return this.publicationService.create({
+      project_ids,
+      ...createPublicationDto,
+    });
   }
 
   @SwaggerSafePatch({ path: ':id' })

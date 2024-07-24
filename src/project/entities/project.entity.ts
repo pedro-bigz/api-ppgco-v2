@@ -1,24 +1,35 @@
-import { Advisor } from '@app/advisor';
-import { ProjectHasCoadvisor } from '@app/project-has-coadvisor';
-import { Publication } from '@app/publication';
-import { PublicationProject } from '@app/publication-project';
-import { ResearchLine } from '@app/research-line';
-import { Student } from '@app/student';
 import {
   BelongsTo,
   BelongsToMany,
   Column,
   CreatedAt,
+  DefaultScope,
   DeletedAt,
   ForeignKey,
   HasMany,
   Model,
+  Scopes,
   Table,
   UpdatedAt,
 } from 'sequelize-typescript';
+import { Advisor } from 'src/advisor/entities';
+import { ProjectHasCoadvisor } from 'src/project-has-coadvisor/entities';
+import { Publication } from 'src/publication/entities';
+import { PublicationProject } from 'src/publication-project/entities';
+import { ResearchLine } from 'src/research-line/entities';
+import { Student } from 'src/student/entities';
+import { Course } from 'src/courses/entities';
 
 export type ProjectCategory = 'mestrado' | 'doutorado' | 'pos-doutorado';
 
+@Scopes(() => ({
+  full: {
+    include: [Course],
+  },
+}))
+@DefaultScope(() => ({
+  include: [Course],
+}))
 @Table({ tableName: 'project' })
 export class Project extends Model {
   @Column({ primaryKey: true, autoIncrement: true })
@@ -34,7 +45,8 @@ export class Project extends Model {
   end_date: Date;
 
   @Column
-  category: ProjectCategory;
+  @ForeignKey(() => Course)
+  course_id: number;
 
   @Column
   @ForeignKey(() => ResearchLine)
@@ -56,6 +68,9 @@ export class Project extends Model {
 
   @DeletedAt
   deleted_at: Date;
+
+  @BelongsTo(() => Course)
+  course: Course;
 
   @BelongsTo(() => Student)
   student: Student;

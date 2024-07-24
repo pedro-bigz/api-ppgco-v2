@@ -1,4 +1,15 @@
-import { Column, Model, Table } from 'sequelize-typescript';
+import {
+  BelongsTo,
+  Column,
+  CreatedAt,
+  DataType,
+  DeletedAt,
+  ForeignKey,
+  Model,
+  Table,
+  UpdatedAt,
+} from 'sequelize-typescript';
+import { MilestoneSituation } from 'src/milestone-situation/entities';
 
 @Table({ tableName: 'milestone_history' })
 export class MilestoneHistory extends Model {
@@ -20,8 +31,12 @@ export class MilestoneHistory extends Model {
   @Column
   need_document: boolean;
 
+  @Column(DataType.JSON)
+  documents: string;
+
   @Column
-  situation: string;
+  @ForeignKey(() => MilestoneSituation)
+  situation_id: number;
 
   @Column
   milestone_id: number;
@@ -29,12 +44,15 @@ export class MilestoneHistory extends Model {
   @Column
   project_id: number;
 
-  @Column
+  @CreatedAt
   created_at: Date;
 
-  @Column
+  @UpdatedAt
   updated_at: Date;
 
-  @Column
+  @DeletedAt
   deleted_at: Date;
+
+  @BelongsTo(() => MilestoneSituation)
+  situation: MilestoneSituation;
 }

@@ -1,6 +1,6 @@
-import { BucketClient, BucketConfig } from '@app/bucket';
+import { BucketClient, BucketConfig } from 'src/bucket';
 import { BucketCredentials, Disk } from '../disk.interfaces';
-import { BucketFileUpload } from '@app/bucket/bucket-files';
+import { BucketFileUpload } from 'src/bucket/bucket-files';
 import path from 'path';
 
 export class PpgcoBucket implements Disk {

@@ -2,7 +2,7 @@ import { Delete as NestDelete, applyDecorators } from '@nestjs/common';
 import { ApiOkResponse } from '@nestjs/swagger';
 import _capitalize from 'lodash/capitalize';
 import { getResponseType } from './utils';
-import { DeleteSuccessResponse } from '@app/core/Common';
+import { DeleteSuccessResponse } from 'src/core/Common';
 import { SwaggerSafeOptions } from './types';
 
 export const SwaggerSafeDelete = (props?: SwaggerSafeOptions) => {

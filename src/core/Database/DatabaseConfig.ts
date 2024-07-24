@@ -1,4 +1,4 @@
-import { EnvHelper, EnvType } from '@app/core';
+import { EnvHelper, EnvType } from 'src/core';
 
 export type DBEnvType = EnvType;
 

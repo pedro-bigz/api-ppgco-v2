@@ -1,16 +1,26 @@
-import { Advisor } from '@app/advisor';
-import { Project } from '@app/project';
 import {
   BelongsTo,
   Column,
   CreatedAt,
+  DefaultScope,
   DeletedAt,
   ForeignKey,
   Model,
+  Scopes,
   Table,
   UpdatedAt,
 } from 'sequelize-typescript';
+import { Advisor } from 'src/advisor/entities';
+import { Project } from 'src/project/entities';
 
+@Scopes(() => ({
+  withTrashed: {
+    paranoid: false,
+  },
+}))
+@DefaultScope(() => ({
+  include: [Project, Advisor],
+}))
 @Table({ tableName: 'project_has_coadvisor' })
 export class ProjectHasCoadvisor extends Model {
   @Column({ primaryKey: true, autoIncrement: true })

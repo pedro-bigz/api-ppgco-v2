@@ -50,6 +50,7 @@ export class ControllerGenerator extends BaseGenerator {
       routePreffix: this.pathHelper.getModuleName(),
       controllerFilename: this.filename,
       controllerClassName: this.controllerClassName,
+      modelClassName: this.nameHelper.resolveModelClassName(),
       service: {
         name: _.lowerFirst(this.serviceClassName),
         path: this.pathHelper.trimTs(this.servicePath),

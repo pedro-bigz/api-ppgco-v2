@@ -1,4 +1,4 @@
-import { User } from '@app/user';
+import { User } from 'src/user';
 import { ApiProperty } from '@nestjs/swagger';
 import { AuthDto } from './auth.dto';
 

@@ -5,7 +5,13 @@ import {
   CreateProjectHasCoadvisorDto,
   UpdateProjectHasCoadvisorDto,
 } from './dto';
-import { AppListing, Query } from '@app/core';
+import { AppListing, OrderDto, Query } from 'src/core';
+import { Optional, Transaction } from 'sequelize';
+import { Op } from 'sequelize';
+
+type CoadvisorCreationAdditionalData = {
+  transaction?: Transaction;
+};
 
 @Injectable()
 export class ProjectHasCoadvisorService {
@@ -23,30 +29,74 @@ export class ProjectHasCoadvisorService {
     perPage: number,
     search: string,
     searchIn: string = 'id',
-    order: Record<string, 'ASC' | 'DESC'>,
+    order: OrderDto[],
   ) {
-    return AppListing.create<typeof ProjectHasCoadvisor>(
+    return AppListing.create<typeof ProjectHasCoadvisor, ProjectHasCoadvisor>(
       this.projectHasCoadvisorModel,
     )
       ?.attachPagination(page, perPage)
-      ?.attachOrderObj(order || { id: 'DESC' })
+      ?.attachMultipleOrder(order || [['id', 'DESC']])
       ?.attachSearch(search, searchIn)
-      ?.modifyQuery((query: Query) => {
+      ?.modifyQuery((query: Query<ProjectHasCoadvisor>) => {
         return {
           ...query,
         };
       })
-      ?.get<ProjectHasCoadvisor>();
+      ?.get();
   }
 
   public findOne(id: number) {
     return this.projectHasCoadvisorModel.findOne({ where: { id } });
   }
 
-  public create(createProjectHasCoadvisorDto: CreateProjectHasCoadvisorDto) {
-    return this.projectHasCoadvisorModel.create({
-      ...createProjectHasCoadvisorDto,
+  public async findFrom(projectId: number) {
+    const coadvisors = await this.projectHasCoadvisorModel.findAll({
+      where: { project_id: projectId },
     });
+
+    return coadvisors;
+  }
+
+  public async findFromDeleteds(projectId: number) {
+    const coadvisors = await this.projectHasCoadvisorModel
+      .scope('withTrashed')
+      .findAll({
+        where: { project_id: projectId, deleted_at: { [Op.not]: null } },
+      });
+
+    return coadvisors;
+  }
+
+  public async findFromWithDeleteds(projectId: number) {
+    const coadvisors = await this.projectHasCoadvisorModel
+      .scope('withTrashed')
+      .findAll({
+        where: { project_id: projectId },
+      });
+
+    return coadvisors;
+  }
+
+  public create(
+    createProjectHasCoadvisorDto: CreateProjectHasCoadvisorDto,
+    additionalData?: CoadvisorCreationAdditionalData,
+  ) {
+    return this.projectHasCoadvisorModel.create(
+      {
+        ...createProjectHasCoadvisorDto,
+      },
+      additionalData,
+    );
+  }
+
+  public bulkCreate(
+    createProjectHasCoadvisorDto: CreateProjectHasCoadvisorDto[],
+    additionalData?: CoadvisorCreationAdditionalData,
+  ) {
+    return this.projectHasCoadvisorModel.bulkCreate(
+      createProjectHasCoadvisorDto as Optional<any, string>[],
+      additionalData,
+    );
   }
 
   public update(
@@ -60,5 +110,26 @@ export class ProjectHasCoadvisorService {
 
   public remove(id: number) {
     return this.projectHasCoadvisorModel.destroy({ where: { id } });
+  }
+
+  public removeAdvisorFrom(advisorsId: number, projectId: number) {
+    return this.projectHasCoadvisorModel.destroy({
+      where: { advisor_id: advisorsId, project_id: projectId },
+    });
+  }
+
+  public removeMultipleAdvisorFrom(
+    advisorsIdList: number[],
+    projectId: number,
+  ) {
+    return this.projectHasCoadvisorModel.destroy({
+      where: { advisor_id: { [Op.in]: advisorsIdList }, project_id: projectId },
+    });
+  }
+
+  public removeFrom(projectId: number) {
+    return this.projectHasCoadvisorModel.destroy({
+      where: { project_id: projectId },
+    });
   }
 }

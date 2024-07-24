@@ -6,7 +6,7 @@ import {
   BeforeCreate,
   BeforeSave,
 } from 'sequelize-typescript';
-import { generateUUID } from '@app/utils';
+import { generateUUID } from 'src/utils';
 import { StoredMedia } from '../abstracts';
 
 export interface MediaInputData {

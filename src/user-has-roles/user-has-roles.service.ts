@@ -1,6 +1,6 @@
 import { Inject, Injectable } from '@nestjs/common';
 import _capitalize from 'lodash/capitalize';
-import { AppListing, Query } from '@app/core';
+import { AppListing, OrderDto, Query } from 'src/core';
 import { USER_HAS_ROLES_REPOSITORY } from './user-has-roles.constants';
 import { UserHasRole } from './entities';
 import { CreateUserHasRolesDto, UpdateUserHasRolesDto } from './dto';
@@ -24,18 +24,20 @@ export class UserHasRolesService {
     perPage: number,
     search: string,
     searchIn: string = 'role_id',
-    order: Record<string, 'ASC' | 'DESC'>,
+    order: OrderDto[],
   ) {
-    return AppListing.create<typeof UserHasRole>(this.userHasRoleModel)
+    return AppListing.create<typeof UserHasRole, UserHasRole>(
+      this.userHasRoleModel,
+    )
       ?.attachPagination(page, perPage)
-      ?.attachOrderObj(order || { role_id: 'DESC' })
+      ?.attachMultipleOrder(order || [['role_id', 'DESC']])
       ?.attachSearch(search, searchIn)
-      ?.modifyQuery((query: Query) => {
+      ?.modifyQuery((query: Query<UserHasRole>) => {
         return {
           ...query,
         };
       })
-      ?.get<UserHasRole>();
+      ?.get();
   }
 
   public findOne(role_id: number) {

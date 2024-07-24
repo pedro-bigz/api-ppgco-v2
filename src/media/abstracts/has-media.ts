@@ -1,4 +1,4 @@
-import { MediaCollectionRepository } from '@app/media/collections/repositories';
+import { MediaCollectionRepository } from 'src/media/collections/repositories';
 import { Media } from '../entities';
 
 export interface HasMedia {

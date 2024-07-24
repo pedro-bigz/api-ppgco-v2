@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import { ApiProperty } from '@nestjs/swagger';
-import { isValid, toIsoString } from '@app/utils';
+import { isValid, toIsoString } from 'src/utils';
 
 export const updateMediaSchema = z.object({
   model_type: z.string().max(255),

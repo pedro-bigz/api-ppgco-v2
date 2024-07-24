@@ -1,19 +1,33 @@
 import { Type } from '@nestjs/common';
 import { ApiProperty } from '@nestjs/swagger';
-import { FindAndCountOptions } from 'sequelize';
-import { Where } from 'sequelize/types/utils';
+import {
+  Model,
+  ModelStatic,
+  FindAndCountOptions,
+  Attributes,
+  WhereOptions as SequelizeWhereOptions,
+} from 'sequelize';
+import { AppListing } from './AppListing';
 
-export interface Model {
-  findAndCountAll: <T>(
-    options?: Omit<FindAndCountOptions<any>, 'group'> | undefined,
-  ) => Promise<{ count: number; rows: T[] }>;
+export type OrderDto = [string, 'ASC' | 'DESC'];
+
+export type QueryOptions<M extends Model> = FindAndCountOptions<Attributes<M>>;
+
+export type Query<M extends Model> = Omit<QueryOptions<M>, 'group'>;
+
+export type WhereOptions<M extends Model> = SequelizeWhereOptions<
+  Attributes<M>
+>;
+
+export type FilterData = { content: any[]; operator: string };
+export type Filters = Record<string, FilterData>;
+
+export interface QueryModifierCallback<
+  T extends Type & ModelStatic<Model>,
+  M extends Model,
+> {
+  (query: Query<M>, current: AppListing<T, M>): Query<M>;
 }
-
-export type Query = {
-  [x: string]: { [x: string]: Where | any } | number | string;
-};
-
-export type QueryModifierCallback = (query: Query) => Query;
 
 export interface PaginatedResponseInterface<M> {
   data: M[];
@@ -26,15 +40,6 @@ export interface PaginatedResponseInterface<M> {
 }
 
 export type ResponseDataType = Type<unknown> | Function | [Function] | string;
-
-export function getPaginatedResponse(type: ResponseDataType) {
-  class PaginatedResponseTmp<T = typeof type> extends PaginatedResponse<T> {
-    @ApiProperty({ type: [type] })
-    data: T[];
-  }
-
-  return PaginatedResponseTmp;
-}
 
 export abstract class PaginatedResponse<M>
   implements PaginatedResponseInterface<M>

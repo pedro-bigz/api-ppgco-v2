@@ -8,7 +8,7 @@ import { Inject, Injectable } from '@nestjs/common';
 import { <%= model.repository %> } from './<%= constantsPath %>';
 import { <%= model.type %> } from './entities';
 import { <%= dto.create.type %>, <%= dto.update.type %> } from './dto';
-import { AppListing, Query } from 'core';
+import { AppListing, OrderDto, Query } from 'src/core';
 
 @Injectable()
 export class <%= serviceClassName %> {
@@ -26,13 +26,13 @@ export class <%= serviceClassName %> {
     perPage: number,
     search: string,
     searchIn: string = '<%= primaryKey.name %>',
-    order: Record<string, 'ASC' | 'DESC'>,
+    order: OrderDto[],
   ) {
-    return AppListing.create<typeof <%= model.type %>>(this.<%= model.name %>)
+    return AppListing.create<typeof <%= model.type %>, <%= model.type %>>(this.<%= model.name %>)
       ?.attachPagination(page, perPage)
-      ?.attachOrderObj(order || { <%= primaryKey.name %>: 'DESC' })
+      ?.attachMultipleOrder(order || [['<%= primaryKey.name %>', 'DESC']])
       ?.attachSearch(search, searchIn)
-      ?.modifyQuery((query: Query) => {
+      ?.modifyQuery((query: Query<<%= model.type %>>) => {
         return {
           ...query,
         };

@@ -1,8 +1,8 @@
 import {
   BelongsTo,
-  BelongsToMany,
   Column,
   CreatedAt,
+  DefaultScope,
   DeletedAt,
   ForeignKey,
   HasMany,
@@ -10,14 +10,17 @@ import {
   Table,
   UpdatedAt,
 } from 'sequelize-typescript';
-import { ProjectHasCoadvisor } from '@app/project-has-coadvisor';
-import { ResearchLine } from '@app/research-line';
-import { Student } from '@app/student';
-import { Project } from '@app/project';
+import { ResearchLine } from 'src/research-line/entities';
+import { Project } from 'src/project/entities';
+import { User } from 'src/user/entities';
 
+@DefaultScope(() => ({
+  include: [User, ResearchLine],
+}))
 @Table({ tableName: 'advisor' })
 export class Advisor extends Model {
   @Column({ primaryKey: true, autoIncrement: true })
+  @ForeignKey(() => User)
   id: number;
 
   @Column
@@ -41,4 +44,7 @@ export class Advisor extends Model {
 
   @HasMany(() => Project)
   projects: Project[];
+
+  @BelongsTo(() => User)
+  user: User;
 }

@@ -26,7 +26,7 @@ export class ZodHelper {
       if (name.includes('cep')) {
         return this.getCepValidation(isNullable);
       }
-      if (name.includes('fone') || name.includes('celular')) {
+      if (name.includes('phone') || name.includes('celular')) {
         return this.getTelefoneValidation(isNullable);
       }
       if (type === 'Date') {

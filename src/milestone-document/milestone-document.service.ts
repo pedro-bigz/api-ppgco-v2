@@ -1,8 +1,18 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { AppListing, Query } from '@app/core';
+import { AppListing, OrderDto, Query } from 'src/core';
 import { MILESTONE_DOCUMENT_REPOSITORY } from './milestone-document.constants';
 import { MilestoneDocument } from './entities';
-import { CreateMilestoneDocumentDto, UpdateMilestoneDocumentDto } from './dto';
+import {
+  BulkCreateMilestoneDocumentDto,
+  CreateMilestoneDocumentDto,
+  UpdateMilestoneDocumentDto,
+} from './dto';
+import { Transaction } from 'sequelize';
+import { Op } from 'sequelize';
+
+interface MilestoneDocumentCreationAdditionalData {
+  transaction?: Transaction;
+}
 
 @Injectable()
 export class MilestoneDocumentService {
@@ -20,20 +30,20 @@ export class MilestoneDocumentService {
     perPage: number,
     search: string,
     searchIn: string = 'id',
-    order: Record<string, 'ASC' | 'DESC'>,
+    order: OrderDto[],
   ) {
-    return AppListing.create<typeof MilestoneDocument>(
+    return AppListing.create<typeof MilestoneDocument, MilestoneDocument>(
       this.milestoneDocumentModel,
     )
       ?.attachPagination(page, perPage)
-      ?.attachOrderObj(order || { id: 'DESC' })
+      ?.attachMultipleOrder(order || [['id', 'DESC']])
       ?.attachSearch(search, searchIn)
-      ?.modifyQuery((query: Query) => {
+      ?.modifyQuery((query: Query<MilestoneDocument>) => {
         return {
           ...query,
         };
       })
-      ?.get<MilestoneDocument>();
+      ?.get();
   }
 
   public findOne(id: number) {
@@ -43,11 +53,23 @@ export class MilestoneDocumentService {
   public create(
     milestoneId: number,
     createMilestoneDocumentDto: CreateMilestoneDocumentDto,
+    additionalData?: MilestoneDocumentCreationAdditionalData,
   ) {
-    return this.milestoneDocumentModel.create({
-      ...createMilestoneDocumentDto,
-      milestone_id: milestoneId,
-    });
+    return this.milestoneDocumentModel.create(
+      {
+        ...createMilestoneDocumentDto,
+        milestone_id: milestoneId,
+      },
+      additionalData,
+    );
+  }
+
+  public bulkCreate(
+    bulkCreateMilestoneDocumentDto: BulkCreateMilestoneDocumentDto[],
+  ) {
+    return this.milestoneDocumentModel.bulkCreate(
+      bulkCreateMilestoneDocumentDto,
+    );
   }
 
   public update(
@@ -61,5 +83,17 @@ export class MilestoneDocumentService {
 
   public remove(id: number) {
     return this.milestoneDocumentModel.destroy({ where: { id } });
+  }
+
+  public destroyFromMilestone(milestoneId: number) {
+    return this.milestoneDocumentModel.destroy({
+      where: { milestone_id: milestoneId },
+    });
+  }
+
+  public bulkDestroy(ids: number[]) {
+    return this.milestoneDocumentModel.destroy({
+      where: { id: { [Op.in]: ids } },
+    });
   }
 }

@@ -5,7 +5,7 @@ import {
   CreateRoleHasPermissionsDto,
   UpdateRoleHasPermissionsDto,
 } from './dto';
-import { AppListing, Query } from '@app/core';
+import { Op } from 'sequelize';
 
 @Injectable()
 export class RoleHasPermissionsService {
@@ -43,5 +43,16 @@ export class RoleHasPermissionsService {
     return this.roleHasPermissionModel.destroy({
       where: { permission_id, role_id },
     });
+  }
+
+  public async hasPermissions(roleIds: number[], permissionId: number) {
+    return this.roleHasPermissionModel
+      .count({
+        where: {
+          permission_id: permissionId,
+          role_id: { [Op.in]: roleIds },
+        },
+      })
+      .then((response) => response > 0);
   }
 }

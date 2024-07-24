@@ -1,7 +1,7 @@
 import { Model } from 'sequelize-typescript';
 import _map from 'lodash/map';
 import _flatten from 'lodash/flatten';
-import { HasMedia } from '@app/media/abstracts';
+import { HasMedia } from 'src/media/abstracts';
 import { MediaCollectionRepository } from './media-collection-repository';
 
 export class MediaCollectionRepositoryHandler {

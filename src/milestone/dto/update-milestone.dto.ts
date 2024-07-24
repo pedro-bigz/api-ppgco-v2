@@ -1,11 +1,11 @@
 import { z } from 'zod';
-import { isValid, toIsoString } from '@app/utils';
+import { isValid, toIsoString } from 'src/utils';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { MilestoneSituation } from '../entities';
-import { updateMilestoneDocumentSchema } from '@app/milestone-document';
-import { customCreateZodDto } from '@app/core';
+import { updateMilestoneDocumentSchema } from 'src/milestone-document';
+import { customCreateZodDto } from 'src/core';
 
 export const updateMilestoneSchema = z.object({
+  project_id: z.number(),
   description: z.string().max(1024).optional(),
   expected_date: z
     .custom(isValid.date, 'Data')
@@ -13,9 +13,9 @@ export const updateMilestoneSchema = z.object({
     .transform(toIsoString),
   meeting_collegiate: z.string().max(255).optional(),
   process_number_sei: z.string().max(255).optional(),
-  need_document: z.string().optional(),
-  situation: z.string().max(12).optional(),
-  document: updateMilestoneDocumentSchema.optional(),
+  need_document: z.boolean().optional(),
+  situation_id: z.number(),
+  documents: z.array(updateMilestoneDocumentSchema.optional()),
 });
 
 export class UpdateMilestoneDto extends customCreateZodDto(

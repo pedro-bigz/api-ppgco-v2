@@ -6,7 +6,8 @@ import {
   SwaggerSafePost,
   SwaggerSafePatch,
   SwaggerSafeDelete,
-} from '@app/core';
+  OrderDto,
+} from 'src/core';
 import { MilestoneService } from './milestone.service';
 import {
   CreateMilestoneDto,
@@ -14,12 +15,14 @@ import {
   UpdateMilestoneDto,
   createMilestoneSchema,
   updateMilestoneSchema,
+  CreateMilestoneIntoProjectDto,
 } from './dto';
-import { Can } from '@app/permissions';
+import { Can } from 'src/permissions';
 import { Permissions } from './milestone.enum';
 import { Milestone } from './entities';
+import { createMilestoneIntoProjectSchema } from './dto/create-milestone-into-project.dto';
 
-@SwaggerSafeController('milestone')
+@SwaggerSafeController('milestones')
 export class MilestoneController {
   public constructor(private readonly milestoneService: MilestoneService) {}
 
@@ -30,23 +33,35 @@ export class MilestoneController {
     @Query('perPage') perPage: string,
     @Query('search') search: string,
     @Query('searchIn') searchIn: string,
-    @Query('order') order: Record<string, 'ASC' | 'DESC'>,
+    @Query('orderBy') order: OrderDto[],
   ) {
     return this.milestoneService.find(+page, +perPage, search, searchIn, order);
   }
 
   @SwaggerSafeGet({ path: ':id', type: Milestone })
-  @Can(Permissions.Index)
+  @Can(Permissions.Read)
   public findOne(@Param('id') id: string) {
     return this.milestoneService.findOne(+id);
   }
 
-  @SwaggerSafePost({ path: ':projectId/new', type: Milestone })
+  @SwaggerSafePost({ type: Milestone })
   @Can(Permissions.Create)
   public create(
-    @Param('projectId') projectId: string,
     @Body(new ZodValidationPipe(createMilestoneSchema))
-    createMilestoneDto: CreateMilestoneDto,
+    { project_ids, ...createMilestoneDto }: CreateMilestoneDto,
+  ) {
+    return this.milestoneService.createFromProjectList(
+      project_ids,
+      createMilestoneDto,
+    );
+  }
+
+  @SwaggerSafePost({ path: ':projectId/new', type: Milestone })
+  @Can(Permissions.Create)
+  public createIntoProject(
+    @Param('projectId') projectId: string,
+    @Body(new ZodValidationPipe(createMilestoneIntoProjectSchema))
+    createMilestoneDto: CreateMilestoneIntoProjectDto,
   ) {
     return this.milestoneService.create(+projectId, createMilestoneDto);
   }

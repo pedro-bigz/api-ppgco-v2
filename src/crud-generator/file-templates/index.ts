@@ -11,3 +11,4 @@ export * as moduleIndexTemplate from './module-index.template';
 export * as dtoCreateTemplate from './dto-create.template';
 export * as dtoUpdateTemplate from './dto-update.template';
 export * as dtoIndexTemplate from './dto-index.template';
+export * as dtoPaginatedModelTemplate from './dto-paginated-model.template';

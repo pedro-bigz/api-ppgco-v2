@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { ENV } from '@app/core';
+import { ENV } from 'src/core';
 
 const env = ENV();
 

@@ -8,50 +8,52 @@ import {
   ZodValidationPipe,
   SwaggerSafeController,
   SwaggerSafeGet,
-  PaginatedResponse,
   SwaggerSafePost,
   SwaggerSafePatch,
   UpdateSuccessResponse,
   SwaggerSafeDelete,
   DeleteSuccessResponse,
-} from '@app/core';
-import { RequestUser, User } from '@app/user';
-import { Can } from '@app/permissions';
+  OrderDto,
+} from 'src/core';
+import { RequestUser, User } from 'src/user';
+import { Can } from 'src/permissions';
 import { StudentService } from './student.service';
 import {
   CreateStudentDto,
-  PaginatedStudentDto,
   UpdateStudentDto,
   createStudentSchema,
   updateStudentSchema,
+  PaginatedStudentDto,
 } from './dto';
 import { Student } from './entities';
+import { Permissions } from './student.enum';
 
-@SwaggerSafeController('student')
+@SwaggerSafeController('students')
 export class StudentController {
   public constructor(private readonly studentService: StudentService) {}
 
-  @SwaggerSafeGet({ type: PaginatedStudentDto, isPaginated: true })
-  @Can('student.list')
+  @SwaggerSafeGet({ type: PaginatedStudentDto })
+  @Can(Permissions.List)
   public findAll(
     @RequestUser() user: User,
     @Query('page') page: string,
     @Query('perPage') perPage: string,
     @Query('search') search: string,
     @Query('searchIn') searchIn: string,
-    @Query('order') order: Record<string, 'ASC' | 'DESC'>,
+    @Query('orderBy') order: OrderDto[],
   ) {
+    console.log({ order });
     return this.studentService.find(+page, +perPage, search, searchIn, order);
   }
 
   @SwaggerSafeGet({ path: ':id', type: Student })
-  @Can('student.index')
+  @Can(Permissions.Read)
   public findOne(@Param('id') id: string) {
-    return this.studentService.findOne(+id);
+    return this.studentService.findOneFullData(+id);
   }
 
   @SwaggerSafePost({ type: Student })
-  @Can('student.create')
+  @Can(Permissions.Create)
   public create(
     @Body(new ZodValidationPipe(createStudentSchema))
     createStudentDto: CreateStudentDto,
@@ -60,16 +62,33 @@ export class StudentController {
   }
 
   @SwaggerSafePatch({ path: ':id', type: UpdateSuccessResponse })
-  @Can('student.update')
+  @Can(Permissions.Update)
   public async update(
     @Param('id') id: string,
     @Body(new ZodValidationPipe(updateStudentSchema))
     updateStudentDto: UpdateStudentDto,
   ) {
-    const [[userUpdateResult], [studentUpdateResult]] =
-      await this.studentService.update(+id, updateStudentDto);
+    const [
+      [userAffecteds],
+      [studentAffecteds],
+      [projectAffecteds],
+      [coadvisorsAffecteds],
+    ] = await this.studentService.update(+id, updateStudentDto);
 
-    if (!userUpdateResult || !studentUpdateResult) {
+    console.log({
+      userAffecteds,
+      studentAffecteds,
+      projectAffecteds,
+      coadvisorsAffecteds,
+    });
+
+    const affecteds =
+      userAffecteds ||
+      studentAffecteds ||
+      projectAffecteds ||
+      coadvisorsAffecteds;
+
+    if (!affecteds) {
       throw new InternalServerErrorException(
         'Student record could not be updated',
       );
@@ -77,13 +96,13 @@ export class StudentController {
 
     return {
       status: 'success',
-      updateds: +(userUpdateResult && studentUpdateResult),
+      updateds: +affecteds,
       message: 'Student updated successfully',
     };
   }
 
   @SwaggerSafeDelete({ path: '/:id', type: DeleteSuccessResponse })
-  @Can('student.delete')
+  @Can(Permissions.Delete)
   public destroy(@Param('id') id: string) {
     const deleteds = this.studentService.remove(+id);
     return {

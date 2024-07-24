@@ -8,6 +8,8 @@ import {
 } from '@nestjs/common';
 import {
   DeleteSuccessResponse,
+  Filters,
+  OrderDto,
   SwaggerSafeController,
   SwaggerSafeDelete,
   SwaggerSafeGet,
@@ -15,25 +17,27 @@ import {
   SwaggerSafePost,
   UpdateSuccessResponse,
   ZodValidationPipe,
-} from '@app/core';
-import { UserService } from './user.service';
-import { createUserSchema, UpdateUserDto } from './dto';
-import { User } from './entities';
-import { Can } from '@app/permissions';
-import { RequestUser } from './user.decorator';
-import { PaginatedUserDto } from './dto';
+} from 'src/core';
 import {
   UploadedMediaValidationPipe,
   UseMediaValidatorInterceotor,
-} from '@app/media';
+} from 'src/media';
+import { Can } from 'src/permissions';
+import { randomString } from 'src/utils';
+import { UserService } from './user.service';
+import { User } from './entities';
+import { createUserSchema, UpdateUserDto, PaginatedUserDto } from './dto';
+import { RequestUser } from './user.decorator';
 import { COLLECTIONS } from './user.constants';
+import { Permissions } from './user.enum';
 
-@SwaggerSafeController('user')
+@SwaggerSafeController('users')
 export class UserController {
   public constructor(private readonly userService: UserService) {}
 
   @SwaggerSafePost({ path: 'upload-file', type: User })
   @UseMediaValidatorInterceotor(COLLECTIONS)
+  @Can(Permissions.Create)
   uploadFileAndPassValidation(
     @RequestUser() user: User,
     @UploadedFiles(UploadedMediaValidationPipe(COLLECTIONS))
@@ -47,27 +51,50 @@ export class UserController {
 
   @SwaggerSafePost({ type: User })
   @UseMediaValidatorInterceotor(COLLECTIONS)
+  @Can(Permissions.Create)
   createUser(
     @Body(new ZodValidationPipe(createUserSchema)) createUserDto: any,
     @UploadedFiles(UploadedMediaValidationPipe(COLLECTIONS))
-    files: Record<string, Express.Multer.File[]>,
+    files?: Record<string, Express.Multer.File[]>,
   ) {
-    return this.userService.create(createUserDto, files);
+    const password =
+      createUserDto.password === 'generate_default'
+        ? randomString(8)
+        : createUserDto.password;
+
+    const mailData =
+      createUserDto.password === 'generate_default'
+        ? `Sua senha é <b>${password}</b>. Altere sua senha no primeiro acesso.<br />`
+        : undefined;
+
+    const dto = { ...createUserDto, password };
+
+    return this.userService.create(dto, { files, mailData });
   }
 
   @SwaggerSafeGet({ type: PaginatedUserDto })
-  @Can('user.list')
+  @Can(Permissions.List)
   public findAll(
     @Query('page') page: string,
     @Query('perPage') perPage: string,
     @Query('search') search: string,
     @Query('searchIn') searchIn: string,
-    @Query('order') order: Record<string, 'ASC' | 'DESC'>,
+    @Query('orderBy') order: OrderDto[],
+    @Query('filters') filters: Filters,
   ) {
-    return this.userService.find(+page, +perPage, search, searchIn, order);
+    console.log({ filters });
+    return this.userService.find(
+      +page,
+      +perPage,
+      search,
+      searchIn,
+      order,
+      filters,
+    );
   }
 
   @SwaggerSafeGet({ path: ':id', type: User })
+  @Can(Permissions.Read)
   public async findOne(@Param('id') id: string[]) {
     console.log('findOne', { id });
     const user = await this.userService.findOne(+id);
@@ -85,6 +112,7 @@ export class UserController {
   }
 
   @SwaggerSafePatch({ path: ':id', type: UpdateSuccessResponse })
+  @Can(Permissions.Update)
   public update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
     const updateds = this.userService.update(+id, updateUserDto);
 
@@ -96,6 +124,7 @@ export class UserController {
   }
 
   @SwaggerSafeDelete({ path: ':id', type: DeleteSuccessResponse })
+  @Can(Permissions.Delete)
   public remove(@Param('id') id: string) {
     const deleteds = this.userService.remove(+id);
     return {

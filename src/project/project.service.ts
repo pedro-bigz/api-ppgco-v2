@@ -2,7 +2,12 @@ import { Inject, Injectable } from '@nestjs/common';
 import { PROJECT_REPOSITORY } from './project.constants';
 import { Project } from './entities';
 import { CreateProjectDto, UpdateProjectDto } from './dto';
-import { AppListing, Query } from '@app/core';
+import { AppListing, OrderDto, Query } from 'src/core';
+import { Transaction } from 'sequelize';
+
+type ProjectCreationAdditionalData = {
+  transaction?: Transaction;
+};
 
 @Injectable()
 export class ProjectService {
@@ -20,26 +25,29 @@ export class ProjectService {
     perPage: number,
     search: string,
     searchIn: string = 'id',
-    order: Record<string, 'ASC' | 'DESC'>,
+    order: OrderDto[],
   ) {
-    return AppListing.create<typeof Project>(this.projectModel)
+    return AppListing.create<typeof Project, Project>(this.projectModel)
       ?.attachPagination(page, perPage)
-      ?.attachOrderObj(order || { id: 'DESC' })
+      ?.attachMultipleOrder(order || [['id', 'DESC']])
       ?.attachSearch(search, searchIn)
-      ?.modifyQuery((query: Query) => {
+      ?.modifyQuery((query: Query<Project>) => {
         return {
           ...query,
         };
       })
-      ?.get<Project>();
+      ?.get();
   }
 
   public findOne(id: number) {
     return this.projectModel.findOne({ where: { id } });
   }
 
-  public create(createProjectDto: CreateProjectDto) {
-    return this.projectModel.create({ ...createProjectDto });
+  public create(
+    createProjectDto: CreateProjectDto,
+    additionalData?: ProjectCreationAdditionalData,
+  ) {
+    return this.projectModel.create({ ...createProjectDto }, additionalData);
   }
 
   public update(id: number, updateProjectDto: UpdateProjectDto) {

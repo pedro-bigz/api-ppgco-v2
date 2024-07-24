@@ -2,6 +2,7 @@ import {
   BelongsTo,
   Column,
   CreatedAt,
+  DefaultScope,
   DeletedAt,
   ForeignKey,
   HasOne,
@@ -10,9 +11,12 @@ import {
   Table,
   UpdatedAt,
 } from 'sequelize-typescript';
-import { User } from '@app/user';
-import { Project } from '@app/project';
+import { User } from 'src/user/entities';
+import { Project } from 'src/project/entities';
 
+@DefaultScope(() => ({
+  include: [User],
+}))
 @Scopes(() => ({
   full: {
     include: [User, Project],

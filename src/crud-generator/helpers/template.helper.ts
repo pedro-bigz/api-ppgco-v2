@@ -1,11 +1,11 @@
 import { Injectable } from '@nestjs/common';
 import { FileHelper } from './file.helper';
 import { SrcPathHelper, TemplatePathHelper } from '.';
-import _ from 'lodash'
+import _ from 'lodash';
 
 @Injectable()
 export class TemplateHelper {
-  protected templatePath: string;
+  protected templatePath: string = '';
   protected modulePath: any;
   protected fileHelper: FileHelper;
   protected srcPathHelper: SrcPathHelper;

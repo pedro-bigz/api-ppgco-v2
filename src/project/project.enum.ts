@@ -1,6 +1,6 @@
 export enum Permissions {
   List = 'project.list',
-  Index = 'project.index',
+  Read = 'project.read',
   Create = 'project.create',
   Update = 'project.update',
   Delete = 'project.delete',

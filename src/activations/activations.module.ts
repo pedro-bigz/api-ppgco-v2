@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
 import { ActivationsService } from './activations.service';
-import { UserModule } from '@app/user';
+import { UserModule } from 'src/user';
 import { activationsProviders } from './activations.providers';
 
 @Module({

@@ -3,8 +3,8 @@ import { Model } from 'sequelize-typescript';
 import _flatMap from 'lodash/flatMap';
 import _isEmpty from 'lodash/isEmpty';
 
-import { Media } from '@app/media/entities';
-import { MediaCollectionRepositoryHandler } from '@app/media/collections';
+import { Media } from 'src/media/entities';
+import { MediaCollectionRepositoryHandler } from 'src/media/collections';
 import { HasMedia } from './has-media';
 
 export abstract class ModelWithMedia extends Model implements HasMedia {

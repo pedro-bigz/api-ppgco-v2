@@ -1,4 +1,4 @@
-import { onlyNumbers } from '@app/utils';
+import { onlyNumbers } from 'src/utils';
 
 export function isValidCnpj(cnpj?: string) {
   if (!cnpj) return false;

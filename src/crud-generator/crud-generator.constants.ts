@@ -31,6 +31,7 @@ export const paths = {
     dtoCreate: 'dto-create.template.ts',
     dtoUpdate: 'dto-update.template.ts',
     dtoIndex: 'dto-index.template.ts',
+    dtoPaginated: 'dto-paginated-model.template.ts',
   },
   extension: {
     model: '.entity.ts',

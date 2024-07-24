@@ -27,8 +27,9 @@ import {
   ModelFolderGenerator,
   DtoFolderGenerator,
 } from './generators';
-import { PermissionsModule } from '@app/permissions';
-import { RoleHasPermissionsModule } from '@app/role-has-permissions';
+import { PermissionsModule } from 'src/permissions';
+import { RoleHasPermissionsModule } from 'src/role-has-permissions';
+import { DtoPaginatedModelGenerator } from './generators/dto-paginated-model.generator';
 
 @Module({
   imports: [
@@ -58,6 +59,7 @@ import { RoleHasPermissionsModule } from '@app/role-has-permissions';
     DtoIndexGenerator,
     DtoCreateGenerator,
     DtoUpdateGenerator,
+    DtoPaginatedModelGenerator,
     ModuleImportGenerator,
     ...crudGeneratorCommands,
   ],
@@ -84,6 +86,7 @@ import { RoleHasPermissionsModule } from '@app/role-has-permissions';
     DtoUpdateGenerator,
     DtoIndexGenerator,
     ModuleImportGenerator,
+    DtoPaginatedModelGenerator,
     ...crudGeneratorCommands,
   ],
 })
