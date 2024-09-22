@@ -1,13 +1,12 @@
 import { Body, Query, Param } from '@nestjs/common';
+import { ZodValidationPipe, OrderDto, Filters } from 'src/common';
 import {
-  ZodValidationPipe,
   SwaggerSafeController,
-  SwaggerSafeGet,
-  SwaggerSafePost,
-  SwaggerSafePatch,
   SwaggerSafeDelete,
-  OrderDto,
-} from 'src/core';
+  SwaggerSafeGet,
+  SwaggerSafePatch,
+  SwaggerSafePost,
+} from 'src/common';
 import { ResearchLineService } from './research-line.service';
 import {
   CreateResearchLineDto,
@@ -34,6 +33,7 @@ export class ResearchLineController {
     @Query('search') search: string,
     @Query('searchIn') searchIn: string,
     @Query('orderBy') order: OrderDto[],
+    @Query('filters') filters: Filters,
   ) {
     return this.researchLineService.find(
       +page,
@@ -41,6 +41,7 @@ export class ResearchLineController {
       search,
       searchIn,
       order,
+      filters,
     );
   }
 

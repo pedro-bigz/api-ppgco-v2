@@ -15,10 +15,10 @@ import {
 import { Advisor } from 'src/advisor/entities';
 import { ProjectHasCoadvisor } from 'src/project-has-coadvisor/entities';
 import { Publication } from 'src/publication/entities';
-import { PublicationProject } from 'src/publication-project/entities';
 import { ResearchLine } from 'src/research-line/entities';
 import { Student } from 'src/student/entities';
 import { Course } from 'src/courses/entities';
+import { Milestone } from 'src/milestone/entities';
 
 export type ProjectCategory = 'mestrado' | 'doutorado' | 'pos-doutorado';
 
@@ -26,10 +26,13 @@ export type ProjectCategory = 'mestrado' | 'doutorado' | 'pos-doutorado';
   full: {
     include: [Course],
   },
+  // full: {
+  //   include: [Course],
+  // },
 }))
-@DefaultScope(() => ({
-  include: [Course],
-}))
+// @DefaultScope(() => ({
+//   include: [Course],
+// }))
 @Table({ tableName: 'project' })
 export class Project extends Model {
   @Column({ primaryKey: true, autoIncrement: true })
@@ -81,7 +84,10 @@ export class Project extends Model {
   @BelongsTo(() => ResearchLine)
   researchLine: ResearchLine;
 
-  @BelongsToMany(() => Publication, () => PublicationProject)
+  @HasMany(() => Milestone)
+  milestones: Milestone[];
+
+  @HasMany(() => Publication)
   publications: Publication[];
 
   @BelongsToMany(() => Advisor, () => ProjectHasCoadvisor)

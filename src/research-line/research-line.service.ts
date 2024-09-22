@@ -1,56 +1,27 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { RESEARCH_LINE_REPOSITORY } from './research-line.constants';
+import { CommonService } from 'src/common';
 import { ResearchLine } from './entities';
+import { RESEARCH_LINE_REPOSITORY } from './research-line.constants';
 import { CreateResearchLineDto, UpdateResearchLineDto } from './dto';
-import { AppListing, OrderDto, Query } from 'src/core';
 
 @Injectable()
-export class ResearchLineService {
+export class ResearchLineService extends CommonService<
+  ResearchLine,
+  typeof ResearchLine
+> {
   public constructor(
-    @Inject(RESEARCH_LINE_REPOSITORY)
-    private readonly researchLineModel: typeof ResearchLine,
-  ) {}
-
-  public findAll() {
-    return this.researchLineModel.findAll();
-  }
-
-  public async find(
-    page: number,
-    perPage: number,
-    search: string,
-    searchIn: string = 'id',
-    order: OrderDto[],
+    @Inject(RESEARCH_LINE_REPOSITORY) model: typeof ResearchLine,
   ) {
-    return AppListing.create<typeof ResearchLine, ResearchLine>(
-      this.researchLineModel,
-    )
-      ?.attachPagination(page, perPage)
-      ?.attachMultipleOrder(order || [['id', 'DESC']])
-      ?.attachSearch(search, searchIn)
-      ?.modifyQuery((query: Query<ResearchLine>) => {
-        return {
-          ...query,
-        };
-      })
-      ?.get();
-  }
-
-  public findOne(id: number) {
-    return this.researchLineModel.findOne({ where: { id } });
+    super(model);
   }
 
   public create(createResearchLineDto: CreateResearchLineDto) {
-    return this.researchLineModel.create({ ...createResearchLineDto });
+    return this.model.create({ ...createResearchLineDto });
   }
 
   public update(id: number, updateResearchLineDto: UpdateResearchLineDto) {
-    return this.researchLineModel.update(updateResearchLineDto, {
+    return this.model.update(updateResearchLineDto, {
       where: { id },
     });
-  }
-
-  public remove(id: number) {
-    return this.researchLineModel.destroy({ where: { id } });
   }
 }

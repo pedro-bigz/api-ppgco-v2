@@ -1,11 +1,10 @@
 import { Body, Query, Param } from '@nestjs/common';
+import { ZodValidationPipe, OrderDto } from 'src/common';
 import {
-  ZodValidationPipe,
   SwaggerSafeController,
   SwaggerSafeGet,
   SwaggerSafePost,
-  OrderDto,
-} from 'src/core';
+} from 'src/common';
 import { DisconnectedStudentService } from './disconnected-student.service';
 import {
   CreateDisconnectedStudentDto,

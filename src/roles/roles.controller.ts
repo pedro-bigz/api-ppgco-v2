@@ -1,5 +1,6 @@
 import { Query } from '@nestjs/common';
-import { OrderDto, SwaggerSafeController, SwaggerSafeGet } from 'src/core';
+import { OrderDto } from 'src/common';
+import { SwaggerSafeController, SwaggerSafeGet } from 'src/common';
 import { Can } from 'src/permissions';
 import { RolesService } from './roles.service';
 import { Permissions } from './roles.enum';

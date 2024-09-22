@@ -1,13 +1,12 @@
 import { Body, Query, Param } from '@nestjs/common';
+import { ZodValidationPipe, OrderDto } from 'src/common';
 import {
-  ZodValidationPipe,
   SwaggerSafeController,
-  SwaggerSafeGet,
-  SwaggerSafePost,
-  SwaggerSafePatch,
   SwaggerSafeDelete,
-  OrderDto,
-} from 'src/core';
+  SwaggerSafeGet,
+  SwaggerSafePatch,
+  SwaggerSafePost,
+} from 'src/common';
 import { Can } from 'src/permissions';
 import { CoursesService } from './courses.service';
 import {

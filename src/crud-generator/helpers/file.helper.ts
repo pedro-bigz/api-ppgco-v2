@@ -5,7 +5,7 @@ import {
   FileSystemException,
   FileAlreadyExistsException,
   FolderAlreadyExistsException,
-} from 'src/core/Exception';
+} from 'src/errors';
 import { SrcPathHelper } from '.';
 import { convertTabsInSpaces } from 'src/utils';
 

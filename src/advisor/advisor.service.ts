@@ -10,14 +10,20 @@ import {
   Transaction,
   CreateOptions as SequelizeCreateOptions,
 } from 'sequelize';
-import { AppListing, OrderDto, Query } from 'src/core';
+import {
+  CommonListing,
+  CommonService,
+  Filters,
+  OrderDto,
+  Query,
+} from 'src/common';
 import { User, UserService } from 'src/user';
 import { onlyNumbers, randomString } from 'src/utils';
 import { ResearchLine } from 'src/research-line';
 import { Role, ROLES } from 'src/roles';
 import { Col } from 'sequelize/types/utils';
-import { ADVISOR_REPOSITORY } from './advisor.constants';
-import { Advisor } from './entities';
+import { ADVISOR_REPOSITORY, V_ADVISOR_REPOSITORY } from './advisor.constants';
+import { Advisor, VAdvisor } from './entities';
 import { CreateAdvisorDto, UpdateAdvisorDto } from './dto';
 
 interface CreateOptions extends SequelizeCreateOptions<Attributes<User>> {
@@ -28,14 +34,29 @@ interface CreateOptions extends SequelizeCreateOptions<Attributes<User>> {
 @Injectable()
 export class AdvisorService {
   public constructor(
-    @Inject(ADVISOR_REPOSITORY)
-    private readonly advisorModel: typeof Advisor,
+    @Inject(ADVISOR_REPOSITORY) private readonly model: typeof Advisor,
+    @Inject(V_ADVISOR_REPOSITORY) private readonly view: typeof VAdvisor,
     private readonly userService: UserService,
     private readonly sequelize: Sequelize,
   ) {}
 
   public findAll(options?: FindOptions<Attributes<Advisor>>) {
-    return this.advisorModel.findAll(options);
+    return this.model.findAll(options);
+  }
+
+  public findOne(id: number, options?: FindOptions<Attributes<Advisor>>) {
+    return this.model.findOne({
+      where: { id, ...(options?.where ?? {}) },
+      ...options,
+    });
+  }
+
+  public findOneFullData(id: number) {
+    return this.model.scope('full').findOne({ where: { id } });
+  }
+
+  public findOneByScope(scope: string, id: number) {
+    return this.model.scope(scope).findOne({ where: { id } });
   }
 
   public async find(
@@ -44,63 +65,14 @@ export class AdvisorService {
     search: string,
     searchIn: string = 'id',
     order: OrderDto[],
+    filters: Filters,
   ) {
-    return AppListing.create<typeof Advisor, Advisor>(this.advisorModel)
+    return CommonListing.create<VAdvisor, typeof VAdvisor>(this.view)
       ?.attachPagination(page, perPage)
-      ?.attachMultipleOrder(
-        order || [
-          ['user.first_name', 'ASC'],
-          ['user.last_name', 'ASC'],
-        ],
-      )
+      ?.attachMultipleOrder(order || [['advisor_name', 'ASC']])
       ?.attachSearch(search, searchIn)
-      ?.modifyQuery((query: Query<Advisor>) => {
-        if (searchIn !== 'user.full_name' || !search) {
-          return query;
-        }
-
-        const concatFn = (first: Col, last: Col) =>
-          fn('CONCAT_WS', ' ', first, last);
-
-        return {
-          ...query,
-          where: {
-            [Op.and]: [
-              where(concatFn(col('user.first_name'), col('user.last_name')), {
-                [Op.like]: search,
-              }),
-            ],
-          },
-          include: [
-            {
-              model: User,
-              attributes: Object.keys(User.getAttributes()),
-              where: { deleted_at: null },
-              include: [
-                {
-                  model: Role,
-                  through: 'UserHasRole',
-                  attributes: Object.keys(Role.getAttributes()),
-                },
-              ],
-            },
-            {
-              model: ResearchLine,
-              attributes: Object.keys(ResearchLine.getAttributes()),
-              where: { deleted_at: null },
-              required: false,
-            },
-          ],
-        } as Query<Advisor>;
-      })
+      ?.attachFilters(filters || {})
       ?.get();
-  }
-
-  public findOne(id: number, options?: FindOptions<Attributes<Advisor>>) {
-    return this.advisorModel.findOne({
-      where: { id, ...(options?.where ?? {}) },
-      ...options,
-    });
   }
 
   public async create(
@@ -122,15 +94,19 @@ export class AdvisorService {
 
     const createAdvisor = async (transaction: Transaction) => {
       const user = await this.userService.create(userData, {
-        mailData: passwordMailMessage,
         transaction,
       });
 
-      const advisor = await this.advisorModel.create({
-        id: user.dataValues.id,
-        lattes,
-        research_line_id,
-      });
+      const advisor = await this.model.create(
+        {
+          id: user.dataValues.id,
+          lattes,
+          research_line_id,
+        },
+        { transaction },
+      );
+
+      this.userService.sendEmailVerification(user, passwordMailMessage);
 
       return advisor;
     };
@@ -146,7 +122,7 @@ export class AdvisorService {
 
   public async update(id: number, updateAdvisorDto: UpdateAdvisorDto) {
     const { lattes, research_line_id, ...advisorUserData } = updateAdvisorDto;
-    const advisorPromise = this.advisorModel.update(
+    const advisorPromise = this.model.update(
       { lattes, research_line_id },
       { where: { id } },
     );
@@ -157,7 +133,7 @@ export class AdvisorService {
     );
   }
 
-  public remove(id: number) {
-    return this.advisorModel.destroy({ where: { id } });
+  public remove(id: number): Promise<number> | void {
+    return this.model.destroy({ where: { id } });
   }
 }

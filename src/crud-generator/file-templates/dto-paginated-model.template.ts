@@ -3,7 +3,7 @@ import { TemplateCompiler } from './base.template';
 export const getCompiler = (props: object) => {
   return TemplateCompiler.create()
     .setContent(
-      `import { PaginatedResponse } from 'src/core';
+      `import { PaginatedResponse } from 'src/common';
 import { <%= modelClassName %> } from '../entities';
 import { ApiProperty } from '@nestjs/swagger';
 

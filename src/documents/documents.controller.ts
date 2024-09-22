@@ -1,20 +1,13 @@
 import { Body, Query, Param } from '@nestjs/common';
+import { ZodValidationPipe, OrderDto } from 'src/common';
 import {
-  ZodValidationPipe,
   SwaggerSafeController,
+  SwaggerSafeDelete,
   SwaggerSafeGet,
   SwaggerSafePost,
-  SwaggerSafePatch,
-  SwaggerSafeDelete,
-  OrderDto,
-} from 'src/core';
+} from 'src/common';
 import { DocumentsService } from './documents.service';
-import {
-  CreateDocumentsDto,
-  UpdateDocumentsDto,
-  createDocumentsSchema,
-  updateDocumentsSchema,
-} from './dto';
+import { CreateDocumentsDto, createDocumentsSchema } from './dto';
 import { Document } from './entities';
 
 @SwaggerSafeController('documents')

@@ -1,17 +1,12 @@
+import { Body, Query, Param } from '@nestjs/common';
+import { OrderDto, ZodValidationPipe } from 'src/common';
 import {
-  Body,
-  Query,
-  Param,
-} from '@nestjs/common';
-import {
-  OrderDto,
-  ZodValidationPipe,
   SwaggerSafeController,
-  SwaggerSafeGet,
-  SwaggerSafePost,
-  SwaggerSafePatch,
   SwaggerSafeDelete,
-} from 'src/core';
+  SwaggerSafeGet,
+  SwaggerSafePatch,
+  SwaggerSafePost,
+} from 'src/common';
 import { NotificationsService } from './notifications.service';
 import {
   CreateNotificationsDto,
@@ -23,7 +18,9 @@ import { Notification } from './entities';
 
 @SwaggerSafeController('notifications')
 export class NotificationsController {
-  public constructor(private readonly notificationsService: NotificationsService) {}
+  public constructor(
+    private readonly notificationsService: NotificationsService,
+  ) {}
 
   @SwaggerSafeGet({ type: Notification })
   public findAll(
@@ -33,7 +30,13 @@ export class NotificationsController {
     @Query('searchIn') searchIn: string,
     @Query('orderBy') order: OrderDto[],
   ) {
-    return this.notificationsService.find(+page, +perPage, search, searchIn, order);
+    return this.notificationsService.find(
+      +page,
+      +perPage,
+      search,
+      searchIn,
+      order,
+    );
   }
 
   @SwaggerSafeGet({ path: ':id', type: Notification })
@@ -55,11 +58,14 @@ export class NotificationsController {
     @Body(new ZodValidationPipe(updateNotificationsSchema))
     updateNotificationsDto: UpdateNotificationsDto,
   ) {
-    const [updateds] = await this.notificationsService.update(+id, updateNotificationsDto);
+    const [updateds] = await this.notificationsService.update(
+      +id,
+      updateNotificationsDto,
+    );
     return {
       updateds,
       message: 'Item atualizado com sucesso',
-    }
+    };
   }
 
   @SwaggerSafeDelete({ path: ':id' })
@@ -68,6 +74,6 @@ export class NotificationsController {
     return {
       deleteds,
       message: 'Item deletado com sucesso',
-    }
+    };
   }
 }

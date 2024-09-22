@@ -2,17 +2,18 @@ import { Inject, Injectable } from '@nestjs/common';
 import { DISCONNECTED_STUDENT_REPOSITORY } from './disconnected-student.constants';
 import { DisconnectedStudent } from './entities';
 import { CreateDisconnectedStudentDto } from './dto';
-import { AppListing, OrderDto, Query } from 'src/core';
+import { CommonListing, CommonService, OrderDto, Query } from 'src/common';
 
 @Injectable()
-export class DisconnectedStudentService {
+export class DisconnectedStudentService extends CommonService<
+  DisconnectedStudent,
+  typeof DisconnectedStudent
+> {
   public constructor(
     @Inject(DISCONNECTED_STUDENT_REPOSITORY)
-    private readonly disconnectedStudentModel: typeof DisconnectedStudent,
-  ) {}
-
-  public findAll() {
-    return this.disconnectedStudentModel.findAll();
+    model: typeof DisconnectedStudent,
+  ) {
+    super(model);
   }
 
   public async find(
@@ -22,9 +23,7 @@ export class DisconnectedStudentService {
     searchIn: string = 'student_id',
     order: OrderDto[],
   ) {
-    return AppListing.create<typeof DisconnectedStudent, DisconnectedStudent>(
-      this.disconnectedStudentModel,
-    )
+    return this.getCommonListing()
       ?.attachPagination(page, perPage)
       ?.attachMultipleOrder(order || [['student_id', 'DESC']])
       ?.attachSearch(search, searchIn)
@@ -36,15 +35,11 @@ export class DisconnectedStudentService {
       ?.get();
   }
 
-  public findOne(student_id: number) {
-    return this.disconnectedStudentModel.findOne({ where: { student_id } });
-  }
-
   public disconnectStudent(
     studentId: number,
     { reason, termination_date }: CreateDisconnectedStudentDto,
   ) {
-    return this.disconnectedStudentModel.create({
+    return this.model.create({
       student_id: studentId,
       reason,
       termination_date: !termination_date ? new Date() : termination_date,

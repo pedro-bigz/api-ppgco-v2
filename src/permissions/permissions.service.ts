@@ -1,48 +1,25 @@
-import { Inject, Injectable } from '@nestjs/common';
-import { PERMISSIONS_REPOSITORY } from './permissions.constants';
-import { Permission } from './entities';
-import { CreatePermissionsDto, UpdatePermissionsDto } from './dto';
-import { AppListing, OrderDto, Query } from 'src/core';
+import { Inject, Injectable, NotImplementedException } from '@nestjs/common';
+import { CommonService } from 'src/common';
 import { User } from 'src/user';
 import { RoleHasPermission } from 'src/role-has-permissions';
 import { Op } from 'sequelize';
 import { Role } from 'src/roles';
 import { UserHasPermission } from 'src/user-has-permissions';
+import { PERMISSIONS_REPOSITORY } from './permissions.constants';
+import { Permission } from './entities';
+import { CreatePermissionsDto, UpdatePermissionsDto } from './dto';
 
 @Injectable()
-export class PermissionsService {
-  public constructor(
-    @Inject(PERMISSIONS_REPOSITORY)
-    private readonly permissionModel: typeof Permission,
-  ) {}
-
-  public findAll() {
-    return this.permissionModel.findAll();
-  }
-
-  public async find(
-    page: number,
-    perPage: number,
-    search: string,
-    searchIn: string = 'id',
-    order: OrderDto[],
-  ) {
-    return AppListing.create<typeof Permission, Permission>(
-      this.permissionModel,
-    )
-      ?.attachPagination(page, perPage)
-      ?.attachMultipleOrder(order || [['id', 'DESC']])
-      ?.attachSearch(search, searchIn)
-      ?.modifyQuery((query: Query<Permission>) => {
-        return {
-          ...query,
-        };
-      })
-      ?.get();
+export class PermissionsService extends CommonService<
+  Permission,
+  typeof Permission
+> {
+  public constructor(@Inject(PERMISSIONS_REPOSITORY) model: typeof Permission) {
+    super(model);
   }
 
   public getUserPermissions(user: User) {
-    return this.permissionModel.findAll({
+    return this.model.findAll({
       include: [
         {
           model: RoleHasPermission,
@@ -70,22 +47,18 @@ export class PermissionsService {
     });
   }
 
-  public findOne(id: number) {
-    return this.permissionModel.findOne({ where: { id } });
-  }
-
   public findByName(name: string, guardName: string) {
-    return this.permissionModel.findOne({
+    return this.model.findOne({
       where: { name, guard_name: guardName },
     });
   }
 
   public create(createPermissionsDto: CreatePermissionsDto) {
-    return this.permissionModel.create({ ...createPermissionsDto });
+    return this.model.create({ ...createPermissionsDto });
   }
 
   public bulkCreate(bulkCreatePermissionsDto: CreatePermissionsDto[]) {
-    return this.permissionModel.bulkCreate(
+    return this.model.bulkCreate(
       bulkCreatePermissionsDto.map(
         (createPermissionsDto: CreatePermissionsDto) => ({
           ...createPermissionsDto,
@@ -96,10 +69,10 @@ export class PermissionsService {
   }
 
   public update(id: number, updatePermissionsDto: UpdatePermissionsDto) {
-    return this.permissionModel.update(updatePermissionsDto, { where: { id } });
+    return this.model.update(updatePermissionsDto, { where: { id } });
   }
 
-  // public remove(id: number) {
-  //   return this.permissionModel.destroy({ where: { id } });
-  // }
+  public remove(_id: number) {
+    throw new NotImplementedException();
+  }
 }

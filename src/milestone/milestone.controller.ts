@@ -1,13 +1,12 @@
 import { Body, Param, Query } from '@nestjs/common';
+import { ZodValidationPipe, OrderDto } from 'src/common';
 import {
-  ZodValidationPipe,
   SwaggerSafeController,
-  SwaggerSafeGet,
-  SwaggerSafePost,
-  SwaggerSafePatch,
   SwaggerSafeDelete,
-  OrderDto,
-} from 'src/core';
+  SwaggerSafeGet,
+  SwaggerSafePatch,
+  SwaggerSafePost,
+} from 'src/common';
 import { MilestoneService } from './milestone.service';
 import {
   CreateMilestoneDto,
@@ -28,13 +27,22 @@ export class MilestoneController {
 
   @SwaggerSafeGet({ type: PaginatedMilestoneDto })
   @Can(Permissions.List)
-  public findAll(
+  public async findAll(
     @Query('page') page: string,
     @Query('perPage') perPage: string,
     @Query('search') search: string,
     @Query('searchIn') searchIn: string,
     @Query('orderBy') order: OrderDto[],
   ) {
+    console.log(
+      await this.milestoneService.find(
+        +page,
+        +perPage,
+        search,
+        searchIn,
+        order,
+      ),
+    );
     return this.milestoneService.find(+page, +perPage, search, searchIn, order);
   }
 

@@ -1,6 +1,7 @@
 import {
   CanActivate,
   ExecutionContext,
+  HttpException,
   Injectable,
   InternalServerErrorException,
   UnauthorizedException,
@@ -42,20 +43,36 @@ export class AuthGuard implements CanActivate {
     }
 
     try {
-      const payload = await this.jwtService.verifyAsync(token, {
-        secret: this.configService.get<string>('JWT_SECRET_KEY'),
-      });
+      const payload = await this.jwtService
+        .verifyAsync<UserPayload>(token, {
+          secret: this.configService.get<string>('JWT_SECRET_KEY'),
+        })
+        .catch(() => {
+          throw new UnauthorizedException('Token expirado');
+        });
+
+      if (!payload._id) {
+        throw new UnauthorizedException('Token inválido');
+      }
 
       // 💡 We're assigning the payload to the request object here
       // so that we can access it in our route handlers
-      const user = await this.userService.findOne(payload._id);
+      const user = await this.userService
+        .findOneWithRoles(payload._id)
+        .catch((error) => {
+          throw new InternalServerErrorException(error);
+        });
 
       if (!user) {
-        throw new InternalServerErrorException('User localization error');
+        throw new InternalServerErrorException('User not authorized');
       }
 
-      request['user'] = this.userService.omitSensitiveData(user);
+      request['user'] = user;
     } catch (error) {
+      if (error instanceof HttpException) {
+        throw error;
+      }
+
       throw new UnauthorizedException();
     }
 

@@ -26,39 +26,49 @@ interface constructor<T> {
   new (...args: any[]): T;
 }
 
-function setCustomAttributes<T>(instance: T, ModelClass: constructor<T>) {
-  function findGetAttributeMethods(instance: T) {
-    return Object.getOwnPropertyNames(instance).filter((name) => {
-      return (
-        typeof instance[name] === 'function' && /^get.*Attribute$/.test(name)
-      );
-    });
-  }
+// function setCustomAttributes<T>(instance: T, ModelClass: constructor<T>) {
+//   function findGetAttributeMethods(instance: T) {
+//     return Object.getOwnPropertyNames(instance).filter((name) => {
+//       return (
+//         typeof instance[name] === 'function' && /^get.*Attribute$/.test(name)
+//       );
+//     });
+//   }
 
-  const methodNames = findGetAttributeMethods(instance);
-  const attributeNames = methodNames.map((name) =>
-    _snakeCase(_trimEnd(_trimStart(name, 'get'), 'Attribute')),
-  );
+//   const methodNames = findGetAttributeMethods(instance);
+//   const attributeNames = methodNames.map((name) =>
+//     _snakeCase(_trimEnd(_trimStart(name, 'get'), 'Attribute')),
+//   );
 
-  console.log({
-    properties: Object.getOwnPropertyNames(instance),
-    methodNames,
-    attributeNames,
-  });
+//   console.log({
+//     properties: Object.getOwnPropertyNames(instance),
+//     methodNames,
+//     attributeNames,
+//   });
 
-  attributeNames.forEach((attributeName, index) => {
-    ModelClass.prototype[attributeName] = methodNames[index];
-  });
-}
+//   attributeNames.forEach((attributeName, index) => {
+//     ModelClass.prototype[attributeName] = methodNames[index];
+//   });
+// }
 
 @Scopes(() => ({
   full: {
     include: [Role],
   },
-}))
-@DefaultScope(() => ({
-  include: [Role],
-  attributes: { exclude: ['password', 'remember_token', 'email_verified_at'] },
+  withRoles: {
+    include: [Role],
+  },
+  withoutSensiveData: {
+    attributes: {
+      exclude: [
+        'password',
+        'remember_token',
+        'email_verified_at',
+        'activated',
+        'forbidden',
+      ],
+    },
+  },
 }))
 @Table({ tableName: 'users' })
 export class User extends ModelWithMedia {
@@ -89,6 +99,9 @@ export class User extends ModelWithMedia {
 
   @Column
   activated: boolean;
+
+  @Column
+  forbidden: boolean;
 
   @Column
   language: string;
@@ -144,9 +157,9 @@ export class User extends ModelWithMedia {
 
   public is(...roleNames: string[]) {
     const counterRoles = (accum: number, role: Role) => {
-      return accum + +roleNames.includes(role.name);
+      return accum + +roleNames.includes(role.dataValues.name);
     };
-    const roles = this.getDataValue('roles').dataValues;
+    const roles = this.getDataValue('roles');
     const count = roles.reduce(counterRoles, 0);
 
     return count === roleNames.length;

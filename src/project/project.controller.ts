@@ -1,13 +1,12 @@
 import { Body, Param, Query } from '@nestjs/common';
+import { ZodValidationPipe, OrderDto, Filters } from 'src/common';
 import {
-  ZodValidationPipe,
   SwaggerSafeController,
-  SwaggerSafeGet,
   SwaggerSafeDelete,
+  SwaggerSafeGet,
   SwaggerSafePatch,
   SwaggerSafePost,
-  OrderDto,
-} from 'src/core';
+} from 'src/common';
 import { ProjectService } from './project.service';
 import {
   CreateProjectDto,
@@ -36,8 +35,16 @@ export class ProjectController {
     @Query('search') search: string,
     @Query('searchIn') searchIn: string,
     @Query('orderBy') order: OrderDto[],
+    @Query('filters') filters: Filters,
   ) {
-    return this.projectService.find(+page, +perPage, search, searchIn, order);
+    return this.projectService.find(
+      +page,
+      +perPage,
+      search,
+      searchIn,
+      order,
+      filters,
+    );
   }
 
   @SwaggerSafeGet({ path: ':id', type: Project })

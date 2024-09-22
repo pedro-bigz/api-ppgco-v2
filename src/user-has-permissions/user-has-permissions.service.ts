@@ -5,17 +5,17 @@ import {
   CreateUserHasPermissionsDto,
   UpdateUserHasPermissionsDto,
 } from './dto';
-import { AppListing, OrderDto, Query } from 'src/core';
+import { CommonListing, CommonService, OrderDto, Query } from 'src/common';
 
 @Injectable()
-export class UserHasPermissionsService {
+export class UserHasPermissionsService extends CommonService<
+  UserHasPermission,
+  typeof UserHasPermission
+> {
   public constructor(
-    @Inject(USER_HAS_PERMISSIONS_REPOSITORY)
-    private readonly userHasPermissionModel: typeof UserHasPermission,
-  ) {}
-
-  public findAll() {
-    return this.userHasPermissionModel.findAll();
+    @Inject(USER_HAS_PERMISSIONS_REPOSITORY) model: typeof UserHasPermission,
+  ) {
+    super(model);
   }
 
   public async find(
@@ -25,9 +25,7 @@ export class UserHasPermissionsService {
     searchIn: string = 'model_id',
     order: OrderDto[],
   ) {
-    return AppListing.create<typeof UserHasPermission, UserHasPermission>(
-      this.userHasPermissionModel,
-    )
+    return this.getCommonListing()
       ?.attachPagination(page, perPage)
       ?.attachMultipleOrder(order || [['model_id', 'DESC']])
       ?.attachSearch(search, searchIn)
@@ -40,11 +38,11 @@ export class UserHasPermissionsService {
   }
 
   public findOne(model_id: number) {
-    return this.userHasPermissionModel.findOne({ where: { model_id } });
+    return this.model.findOne({ where: { model_id } });
   }
 
   public create(createUserHasPermissionsDto: CreateUserHasPermissionsDto) {
-    return this.userHasPermissionModel.create({
+    return this.model.create({
       ...createUserHasPermissionsDto,
     });
   }
@@ -53,12 +51,12 @@ export class UserHasPermissionsService {
     model_id: number,
     updateUserHasPermissionsDto: UpdateUserHasPermissionsDto,
   ) {
-    return this.userHasPermissionModel.update(updateUserHasPermissionsDto, {
+    return this.model.update(updateUserHasPermissionsDto, {
       where: { model_id },
     });
   }
 
   public remove(model_id: number) {
-    return this.userHasPermissionModel.destroy({ where: { model_id } });
+    return this.model.destroy({ where: { model_id } });
   }
 }

@@ -1,6 +1,6 @@
 import { CommandFactory } from 'nest-commander';
 import { AppModule } from './app.module';
-import { configHelper } from 'src/core';
+import { configHelper } from 'src/common';
 
 async function bootstrap() {
   if (!configHelper.isProduction()) {

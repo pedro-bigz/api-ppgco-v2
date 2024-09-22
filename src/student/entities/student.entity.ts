@@ -14,12 +14,24 @@ import {
 import { User } from 'src/user/entities';
 import { Project } from 'src/project/entities';
 
-@DefaultScope(() => ({
-  include: [User],
-}))
+// @DefaultScope(() => ({
+//   include: [User],
+// }))
 @Scopes(() => ({
+  withUser: {
+    include: [User],
+  },
+  withProject: {
+    include: [Project],
+  },
   full: {
     include: [User, Project],
+  },
+  onlyRelations: {
+    include: [
+      { model: User, attributes: [] },
+      { model: Project, attributes: [] },
+    ],
   },
 }))
 @Table({ tableName: 'student' })

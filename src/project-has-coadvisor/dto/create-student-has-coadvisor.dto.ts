@@ -1,7 +1,7 @@
 import { z } from 'zod';
 import { ApiProperty } from '@nestjs/swagger';
 import { isValid, toIsoString } from 'src/utils';
-import { customCreateZodDto } from 'src/core';
+import { customCreateZodDto } from 'src/common';
 
 export const createProjectHasCoadvisorSchema = z.object({
   student_id: z.number(),

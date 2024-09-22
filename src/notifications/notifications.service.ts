@@ -1,7 +1,7 @@
 import { Inject, Injectable } from '@nestjs/common';
 import _chunk from 'lodash/chunk';
 
-import { AppListing, OrderDto, Query } from 'src/core';
+import { CommonListing, CommonService, OrderDto, Query } from 'src/common';
 import { Notification } from './entities';
 import { CreateNotificationsDto, UpdateNotificationsDto } from './dto';
 import { NOTIFICATIONS_REPOSITORY } from './notifications.constants';
@@ -11,54 +11,29 @@ import { NotifySomeStudents } from './notify-some-students.strategy';
 import { NotifySomeAdvisors } from './notify-some-advisors.strategy';
 
 @Injectable()
-export class NotificationsService {
+export class NotificationsService extends CommonService<
+  Notification,
+  typeof Notification
+> {
   public constructor(
-    @Inject(NOTIFICATIONS_REPOSITORY)
-    private readonly notificationModel: typeof Notification,
+    @Inject(NOTIFICATIONS_REPOSITORY) model: typeof Notification,
     private readonly notifyAllAdvisors: NotifyAllAdvisors,
     private readonly notifyAllStudents: NotifyAllStudents,
     private readonly notifySomeAdvisors: NotifySomeAdvisors,
     private readonly notifySomeStudents: NotifySomeStudents,
-  ) {}
-
-  public findAll() {
-    return this.notificationModel.findAll();
-  }
-
-  public async find(
-    page: number,
-    perPage: number,
-    search: string,
-    searchIn: string = 'id',
-    order: OrderDto[],
   ) {
-    return AppListing.create<typeof Notification, Notification>(
-      this.notificationModel,
-    )
-      ?.attachPagination(page, perPage)
-      ?.attachMultipleOrder(order || [['id', 'DESC']])
-      ?.attachSearch(search, searchIn)
-      ?.modifyQuery((query: Query<Notification>) => {
-        return {
-          ...query,
-        };
-      })
-      ?.get();
-  }
-
-  public findOne(id: number) {
-    return this.notificationModel.findOne({ where: { id } });
+    super(model);
   }
 
   public findOneWithUsers(id: number) {
-    return this.notificationModel.scope('withUsers').findOne({ where: { id } });
+    return this.findOneByScope('withUsers', id);
   }
 
   public async create({
     notifieds,
     ...createNotificationsDto
   }: CreateNotificationsDto) {
-    const notification = await this.notificationModel.create({
+    const notification = await this.model.create({
       ...createNotificationsDto,
     });
 
@@ -80,12 +55,8 @@ export class NotificationsService {
   }
 
   public update(id: number, updateNotificationsDto: UpdateNotificationsDto) {
-    return this.notificationModel.update(updateNotificationsDto, {
+    return this.model.update(updateNotificationsDto, {
       where: { id },
     });
-  }
-
-  public remove(id: number) {
-    return this.notificationModel.destroy({ where: { id } });
   }
 }

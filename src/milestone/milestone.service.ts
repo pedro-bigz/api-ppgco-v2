@@ -3,39 +3,45 @@ import { Transaction } from 'sequelize';
 import _differenceBy from 'lodash/differenceBy';
 import _intersectionBy from 'lodash/intersectionBy';
 
-import { AppListing, dayjs, OrderDto, Query } from 'src/core';
+import { CommonListing, CommonService, OrderDto, Query } from 'src/common';
 import { MilestoneDocumentService } from 'src/milestone-document';
 import {
   CreateMilestoneHistoryDto,
   MilestoneHistoryService,
 } from 'src/milestone-history';
-import { SystemApliancesService } from 'src/system-apliances';
-import { MILESTONE_REPOSITORY } from './milestone.constants';
-import { Milestone } from './entities';
 import {
-  CreateMilestoneDto,
-  DefaultMilestonesDto,
-  UpdateMilestoneDto,
-} from './dto';
+  MILESTONE_REPOSITORY,
+  V_MILESTONE_REPOSITORY,
+} from './milestone.constants';
+import { Milestone, VMilestone } from './entities';
+import { CreateMilestoneDto, UpdateMilestoneDto } from './dto';
 import { DefaultMilestonesService } from 'src/default-milestones/default-milestones.service';
+import dayjs from 'dayjs';
 
 interface MilestoneCreationAdditionalData {
   transaction?: Transaction;
 }
 
 @Injectable()
-export class MilestoneService {
+export class MilestoneService extends CommonService<
+  Milestone,
+  typeof Milestone
+> {
   public constructor(
-    @Inject(MILESTONE_REPOSITORY)
-    private readonly milestoneModel: typeof Milestone,
+    @Inject(MILESTONE_REPOSITORY) milestoneModel: typeof Milestone,
+    @Inject(V_MILESTONE_REPOSITORY)
+    private readonly milestoneView: typeof VMilestone,
     private readonly milestoneDocumentService: MilestoneDocumentService,
     private readonly milestoneHistoryService: MilestoneHistoryService,
-    private readonly systemApliancesService: SystemApliancesService,
     private readonly defaultMilestoneService: DefaultMilestonesService,
-  ) {}
+  ) {
+    super(milestoneModel);
+  }
 
-  public findAll() {
-    return this.milestoneModel.findAll();
+  public getCommonListing() {
+    return CommonListing.create<VMilestone, typeof VMilestone>(
+      this.milestoneView,
+    ) as any;
   }
 
   public async find(
@@ -45,7 +51,7 @@ export class MilestoneService {
     searchIn: string = 'id',
     order: OrderDto[],
   ) {
-    return AppListing.create<typeof Milestone, Milestone>(this.milestoneModel)
+    return this.getCommonListing()
       ?.attachPagination(page, perPage)
       ?.attachMultipleOrder(order || [['situation_id', 'DESC']])
       ?.attachSearch(search, searchIn)
@@ -54,11 +60,7 @@ export class MilestoneService {
           ...query,
         };
       })
-      ?.get();
-  }
-
-  public findOne(id: number) {
-    return this.milestoneModel.findOne({ where: { id } });
+      ?.get() as any;
   }
 
   public async createFromProjectList(
@@ -68,7 +70,7 @@ export class MilestoneService {
   ) {
     const { documents, ...milestoneDto } = createMilestoneDto;
 
-    const milestones = await this.milestoneModel.bulkCreate(
+    const milestones = await this.model.bulkCreate(
       projectIds.map((projectId) => ({
         ...milestoneDto,
         project_id: projectId,
@@ -99,7 +101,7 @@ export class MilestoneService {
   ) {
     const { documents, ...milestoneDto } = createMilestoneDto;
 
-    const milestone = await this.milestoneModel.create(
+    const milestone = await this.model.create(
       {
         ...milestoneDto,
         project_id: projectId,
@@ -129,8 +131,7 @@ export class MilestoneService {
       }),
     );
 
-    const milestonesRegisters =
-      await this.milestoneModel.bulkCreate(milestonesList);
+    const milestonesRegisters = await this.model.bulkCreate(milestonesList);
 
     await this.milestoneDocumentService.bulkCreate(
       createMilestoneDtoList
@@ -160,7 +161,7 @@ export class MilestoneService {
     }
 
     const historyPromise = this.persistHistory(id, register.dataValues);
-    const milestonePromise = this.milestoneModel.update(updateMilestoneDto, {
+    const milestonePromise = this.model.update(updateMilestoneDto, {
       where: { id },
     });
 
@@ -203,10 +204,6 @@ export class MilestoneService {
     history.documents = register.documents.map(({ doc_name }) => doc_name);
 
     return this.milestoneHistoryService.create(history);
-  }
-
-  public remove(id: number) {
-    return this.milestoneModel.destroy({ where: { id } });
   }
 
   public async configProjectDefaultMilestones(

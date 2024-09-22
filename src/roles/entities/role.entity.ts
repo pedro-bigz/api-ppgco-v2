@@ -11,9 +11,6 @@ import {
 import { Permission } from 'src/permissions/entities';
 import { RoleHasPermission } from 'src/role-has-permissions/entities';
 
-@DefaultScope(() => ({
-  // include: [Permission],
-}))
 @Scopes(() => ({
   full: {
     include: [Permission],

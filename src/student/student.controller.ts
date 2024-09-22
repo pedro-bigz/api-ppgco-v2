@@ -4,18 +4,14 @@ import {
   Param,
   Query,
 } from '@nestjs/common';
+import { ZodValidationPipe, OrderDto, Filters } from 'src/common';
 import {
-  ZodValidationPipe,
   SwaggerSafeController,
-  SwaggerSafeGet,
-  SwaggerSafePost,
-  SwaggerSafePatch,
-  UpdateSuccessResponse,
   SwaggerSafeDelete,
-  DeleteSuccessResponse,
-  OrderDto,
-} from 'src/core';
-import { RequestUser, User } from 'src/user';
+  SwaggerSafeGet,
+  SwaggerSafePatch,
+  SwaggerSafePost,
+} from 'src/common';
 import { Can } from 'src/permissions';
 import { StudentService } from './student.service';
 import {
@@ -27,6 +23,7 @@ import {
 } from './dto';
 import { Student } from './entities';
 import { Permissions } from './student.enum';
+import { DeleteSuccessResponse, UpdateSuccessResponse } from 'src/common/dto';
 
 @SwaggerSafeController('students')
 export class StudentController {
@@ -35,21 +32,39 @@ export class StudentController {
   @SwaggerSafeGet({ type: PaginatedStudentDto })
   @Can(Permissions.List)
   public findAll(
-    @RequestUser() user: User,
     @Query('page') page: string,
     @Query('perPage') perPage: string,
     @Query('search') search: string,
     @Query('searchIn') searchIn: string,
     @Query('orderBy') order: OrderDto[],
+    @Query('filters') filters: Filters,
   ) {
-    console.log({ order });
-    return this.studentService.find(+page, +perPage, search, searchIn, order);
+    return this.studentService.find(
+      +page,
+      +perPage,
+      search,
+      searchIn,
+      order,
+      filters,
+    );
   }
+
+  // @SwaggerSafeGet({ path: '/count', type: Number })
+  // @Can(Permissions.List)
+  // public count(
+  //   @Query('search') search: string,
+  //   @Query('searchIn') searchIn: string,
+  //   @Query('groupBy') groupBy: string,
+  //   @Query('attributes') attributes: string | string[],
+  // ) {
+  //   console.log({ attributes });
+  //   return this.studentService.count(search, searchIn, groupBy, attributes);
+  // }
 
   @SwaggerSafeGet({ path: ':id', type: Student })
   @Can(Permissions.Read)
   public findOne(@Param('id') id: string) {
-    return this.studentService.findOneFullData(+id);
+    return this.studentService.findWithProjectData(+id);
   }
 
   @SwaggerSafePost({ type: Student })

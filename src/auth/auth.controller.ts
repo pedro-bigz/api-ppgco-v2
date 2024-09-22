@@ -11,8 +11,9 @@ import {
 } from '@nestjs/common';
 import { ApiOkResponse } from '@nestjs/swagger';
 import _map from 'lodash/map';
-import { ZodValidationPipe, SwaggerSafeController } from 'src/core';
-import { User } from 'src/user';
+import { ZodValidationPipe } from 'src/common';
+import { SwaggerSafeController } from 'src/common';
+import { CurrentUser, User } from 'src/user';
 import { Permission, PermissionsService } from 'src/permissions';
 import { AuthService } from './auth.service';
 import {
@@ -24,6 +25,7 @@ import {
   RefreshTokenDto,
 } from './dto';
 import { BearerToken, Public } from './auth.decorator';
+import dayjs from 'dayjs';
 
 @SwaggerSafeController('auth')
 export class AuthController {
@@ -49,9 +51,8 @@ export class AuthController {
     description: `This endpoint gets logged in user`,
     type: User,
   })
-  public async getProfile(@Request() req: any) {
-    const { user } = req;
-
+  public async getProfile(@CurrentUser() { dataValues: user }: User) {
+    console.log({ roles: user.roles });
     const permissions = await this.permissionService
       .getUserPermissions(user)
       .then((permissions: Permission[]) => {
@@ -59,6 +60,12 @@ export class AuthController {
       });
 
     const { roles, ...userData } = user;
+
+    console.log({
+      ...userData,
+      permissions,
+      roles: _map(roles, 'name'),
+    });
 
     return {
       ...userData,

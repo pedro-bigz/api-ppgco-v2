@@ -1,28 +1,32 @@
 import { Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { Sequelize } from 'sequelize-typescript';
-import { AppListing, Query, OrderDto, dayjs } from 'src/core';
-import { User, UserService } from 'src/user';
-import { onlyNumbers, randomString } from 'src/utils';
-import { ROLES } from 'src/roles';
-import { STUDENT_REPOSITORY } from './student.constants';
-import { Student } from './entities';
-import { CreateStudentDto, UpdateStudentDto } from './dto';
-import { MilestoneService } from 'src/milestone';
-import { ProjectService } from 'src/project';
+import dayjs from 'dayjs';
 import _snakeCase from 'lodash/snakeCase';
 import _difference from 'lodash/difference';
+import { ROLES } from 'src/roles';
+import { User, UserService } from 'src/user';
+import { Project, ProjectService } from 'src/project';
+import { MilestoneService } from 'src/milestone';
+import { onlyNumbers, randomString } from 'src/utils';
+import {
+  CommonListing,
+  CommonService,
+  Filters,
+  OrderDto,
+  Query,
+} from 'src/common';
 import { ProjectHasCoadvisorService } from 'src/project-has-coadvisor';
+import { Student, VStudent } from './entities';
+import { STUDENT_REPOSITORY, V_STUDENT_REPOSITORY } from './student.constants';
+import { CreateStudentDto, UpdateStudentDto } from './dto';
+import { Course } from 'src/courses';
 import { Attributes, FindOptions } from 'sequelize';
-
-const formatCourseName = (name: string) => {
-  return _snakeCase(name.normalize('NFD').replace(/[\u0300-\u036f]/g, ''));
-};
 
 @Injectable()
 export class StudentService {
   public constructor(
-    @Inject(STUDENT_REPOSITORY)
-    private readonly studentModel: typeof Student,
+    @Inject(STUDENT_REPOSITORY) private readonly model: typeof Student,
+    @Inject(V_STUDENT_REPOSITORY) private readonly view: typeof VStudent,
     private readonly userService: UserService,
     private readonly sequelize: Sequelize,
     private readonly coadvisorService: ProjectHasCoadvisorService,
@@ -31,41 +35,50 @@ export class StudentService {
   ) {}
 
   public findAll(options?: FindOptions<Attributes<Student>>) {
-    return this.studentModel.findAll(options);
+    return this.model.findAll(options);
+  }
+
+  public findOne(id: number, options?: FindOptions<Attributes<Student>>) {
+    return this.model.findOne({
+      where: { id, ...(options?.where ?? {}) },
+      ...options,
+    });
+  }
+
+  public findOneFullData(id: number) {
+    return this.model.scope('full').findOne({ where: { id } });
+  }
+
+  public findOneByScope(scope: string, id: number) {
+    return this.model.scope(scope).findOne({ where: { id } });
+  }
+
+  public remove(id: number): Promise<number> | void {
+    return this.model.destroy({ where: { id } });
   }
 
   public async find(
     page: number,
     perPage: number,
     search: string,
-    searchIn: string = 'id',
+    searchIn: string,
     order: OrderDto[],
+    filters?: Filters,
   ) {
-    return AppListing.create<typeof Student, Student>(this.studentModel)
+    return CommonListing.create<VStudent, typeof VStudent>(this.view)
       ?.attachPagination(page, perPage)
-      ?.attachMultipleOrder(order || [['id', 'DESC']])
+      ?.attachMultipleOrder(order)
       ?.attachSearch(search, searchIn)
-      ?.modifyQuery((query: Query<Student>) => {
-        return {
-          ...query,
-        };
-      })
+      ?.attachFilters(filters ?? {})
       ?.get();
   }
 
-  public findOne(id: number, options?: FindOptions<Attributes<Student>>) {
-    return this.studentModel.findOne({
-      where: { id, ...options?.where },
-      ...options,
-    });
-  }
-
-  public findOneFullData(id: number) {
-    return this.studentModel.scope('full').findOne({ where: { id } });
+  public findWithProjectData(id: number) {
+    return this.model.scope('withProject').findOne({ where: { id } });
   }
 
   public findFromUser(user: User) {
-    return this.studentModel.scope('full').findOne({
+    return this.model.scope('withProject').findOne({
       where: { user_id: user.dataValues.id },
     });
   }
@@ -106,9 +119,7 @@ export class StudentService {
         transaction: t,
       });
 
-      console.log({ studentDto });
-
-      const student = await this.studentModel.create(
+      const student = await this.model.create(
         {
           ...studentDto,
           user_id: user.dataValues.id,
@@ -185,7 +196,7 @@ export class StudentService {
       phone,
     });
 
-    const [studentAffecteds] = await this.studentModel.update(studentDto, {
+    const [studentAffecteds] = await this.model.update(studentDto, {
       where: { id },
     });
 
@@ -229,9 +240,5 @@ export class StudentService {
       [projectAffecteds],
       [coadvisors.length],
     ];
-  }
-
-  public remove(id: number) {
-    return this.studentModel.destroy({ where: { id } });
   }
 }

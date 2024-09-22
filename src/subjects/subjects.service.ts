@@ -1,53 +1,72 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { SUBJECTS_REPOSITORY } from './subjects.constants';
-import { Subject } from './entities';
+import { CommonListing, Filters, OrderDto } from 'src/common';
+import {
+  SUBJECTS_REPOSITORY,
+  V_SUBJECTS_REPOSITORY,
+} from './subjects.constants';
+import { Subject, VSubject } from './entities';
 import { CreateSubjectsDto, UpdateSubjectsDto } from './dto';
-import { AppListing, OrderDto, Query } from 'src/core';
+import { Attributes, FindOptions } from 'sequelize';
 
 @Injectable()
 export class SubjectsService {
   public constructor(
-    @Inject(SUBJECTS_REPOSITORY)
-    private readonly subjectModel: typeof Subject,
+    @Inject(SUBJECTS_REPOSITORY) private readonly model: typeof Subject,
+    @Inject(V_SUBJECTS_REPOSITORY) private readonly view: typeof VSubject,
   ) {}
 
-  public findAll() {
-    return this.subjectModel.findAll();
+  public findAll(options?: FindOptions<Attributes<Subject>>) {
+    return this.model.findAll(options);
+  }
+
+  private getListing() {
+    return CommonListing.create<VSubject, typeof VSubject>(this.view);
   }
 
   public async find(
     page: number,
     perPage: number,
     search: string,
-    searchIn: string = 'id',
+    searchIn: string,
     order: OrderDto[],
+    filters?: Filters,
   ) {
-    console.log(this.subjectModel.name);
-    return AppListing.create<typeof Subject, Subject>(this.subjectModel)
+    const r = await this.getListing()
       ?.attachPagination(page, perPage)
-      ?.attachMultipleOrder(order || [['id', 'DESC']])
+      ?.attachMultipleOrder(order)
       ?.attachSearch(search, searchIn)
-      ?.modifyQuery((query: Query<Subject>) => {
-        return {
-          ...query,
-        };
-      })
+      ?.attachFilters(filters ?? {})
       ?.get();
+
+    console.log({ r: r?.data });
+
+    return r;
   }
 
-  public findOne(id: number) {
-    return this.subjectModel.findOne({ where: { id } });
+  public findOne(id: number, options?: FindOptions<Attributes<Subject>>) {
+    return this.model.findOne({
+      where: { id, ...(options?.where ?? {}) },
+      ...options,
+    });
+  }
+
+  public findOneFullData(id: number) {
+    return this.model.scope('full').findOne({ where: { id } });
+  }
+
+  public findOneByScope(scope: string, id: number) {
+    return this.model.scope(scope).findOne({ where: { id } });
+  }
+
+  public remove(id: number): Promise<number> | void {
+    return this.model.destroy({ where: { id } });
   }
 
   public create(createSubjectsDto: CreateSubjectsDto) {
-    return this.subjectModel.create({ ...createSubjectsDto });
+    return this.model.create({ ...createSubjectsDto });
   }
 
   public update(id: number, updateSubjectsDto: UpdateSubjectsDto) {
-    return this.subjectModel.update(updateSubjectsDto, { where: { id } });
-  }
-
-  public remove(id: number) {
-    return this.subjectModel.destroy({ where: { id } });
+    return this.model.update(updateSubjectsDto, { where: { id } });
   }
 }

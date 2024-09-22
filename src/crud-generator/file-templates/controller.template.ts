@@ -17,7 +17,7 @@ import {
   SwaggerSafePost,
   SwaggerSafePatch,
   SwaggerSafeDelete,
-} from 'src/core';
+} from 'src/common';
 import { <%= service.className %> } from './<%= service.path %>';
 import {
   <%= dto.create.type %>,

@@ -1,5 +1,6 @@
 import { z } from 'zod';
-import { customCreateZodDto, dayjs } from 'src/core';
+import { customCreateZodDto } from 'src/common';
+import dayjs from 'dayjs';
 
 const validateDate = (date: string) => dayjs(date).isValid();
 

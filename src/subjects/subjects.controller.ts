@@ -1,13 +1,5 @@
 import { Body, Query, Param } from '@nestjs/common';
-import {
-  ZodValidationPipe,
-  SwaggerSafeController,
-  SwaggerSafeGet,
-  SwaggerSafePost,
-  SwaggerSafePatch,
-  SwaggerSafeDelete,
-  OrderDto,
-} from 'src/core';
+import { ZodValidationPipe, OrderDto, Filters } from 'src/common';
 import { SubjectsService } from './subjects.service';
 import {
   CreateSubjectsByListDto,
@@ -21,6 +13,13 @@ import { Subject } from './entities';
 import { PaginatedSubjectDto } from './dto/paginated-subject.dto';
 import { Can } from 'src/permissions';
 import { Permissions } from './subjects.enum';
+import {
+  SwaggerSafeController,
+  SwaggerSafeDelete,
+  SwaggerSafeGet,
+  SwaggerSafePatch,
+  SwaggerSafePost,
+} from 'src/common';
 
 @SwaggerSafeController('subjects')
 export class SubjectsController {
@@ -34,6 +33,7 @@ export class SubjectsController {
     @Query('search') search: string,
     @Query('searchIn') searchIn: string,
     @Query('orderBy') orderBy: OrderDto[],
+    @Query('filters') filters: Filters,
   ) {
     return this.subjectsService.find(
       +page,
@@ -41,8 +41,19 @@ export class SubjectsController {
       search,
       searchIn,
       orderBy,
+      filters,
     );
   }
+
+  // @SwaggerSafeGet({ path: '/count', type: Number })
+  // @Can(Permissions.List)
+  // public count(
+  //   @Query('search') search: string,
+  //   @Query('searchIn') searchIn: string,
+  //   @Query('groupBy') groupBy: string,
+  // ) {
+  //   return this.subjectsService.count(search, searchIn);
+  // }
 
   @SwaggerSafeGet({ path: ':id', type: Subject })
   @Can(Permissions.Read)

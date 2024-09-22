@@ -1,61 +1,33 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { Inject, Injectable, NotImplementedException } from '@nestjs/common';
 import _capitalize from 'lodash/capitalize';
 import { Includeable, Op } from 'sequelize';
-import { AppListing, OrderDto, Query } from 'src/core';
+import { CommonListing, CommonService, OrderDto, Query } from 'src/common';
 import { ROLES_REPOSITORY } from './roles.constants';
 import { Role } from './entities';
 import { CreateRolesDto, UpdateRolesDto } from './dto';
 
 @Injectable()
-export class RolesService {
-  public constructor(
-    @Inject(ROLES_REPOSITORY)
-    private readonly roleModel: typeof Role,
-  ) {}
-
-  public findAll(...include: Includeable[]) {
-    return this.roleModel.findAll({ include });
-  }
-
-  public async find(
-    page: number,
-    perPage: number,
-    search: string,
-    searchIn: string = 'id',
-    order: OrderDto[],
-  ) {
-    return AppListing.create<typeof Role, Role>(this.roleModel)
-      ?.attachPagination(page, perPage)
-      ?.attachMultipleOrder(order || [['id', 'DESC']])
-      ?.attachSearch(search, searchIn)
-      ?.modifyQuery((query: Query<Role>) => {
-        return {
-          ...query,
-        };
-      })
-      ?.get();
-  }
-
-  public findOne(id: number, ...include: Includeable[]) {
-    return this.roleModel.findOne({ where: { id }, include });
+export class RolesService extends CommonService<Role, typeof Role> {
+  public constructor(@Inject(ROLES_REPOSITORY) model: typeof Role) {
+    super(model);
   }
 
   public create(createRolesDto: CreateRolesDto) {
-    return this.roleModel.create({ ...createRolesDto });
+    return this.model.create({ ...createRolesDto });
   }
 
   public update(id: number, updateRolesDto: UpdateRolesDto) {
-    return this.roleModel.update(updateRolesDto, { where: { id } });
+    return this.model.update(updateRolesDto, { where: { id } });
   }
 
   public findByName(name: string) {
-    return this.roleModel.findOne({
+    return this.model.findOne({
       where: { name: _capitalize(name) },
     });
   }
 
   public findByNameList(names: string[]) {
-    return this.roleModel.findAll({
+    return this.model.findAll({
       where: {
         name: {
           [Op.in]: names.map(_capitalize),
@@ -64,7 +36,7 @@ export class RolesService {
     });
   }
 
-  // public remove(id: number) {
-  //   return this.roleModel.destroy({ where: { id } });
-  // }
+  public remove(_id: number) {
+    throw new NotImplementedException();
+  }
 }

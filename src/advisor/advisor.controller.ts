@@ -1,13 +1,12 @@
 import { Body, Query, Param } from '@nestjs/common';
+import { ZodValidationPipe, OrderDto, Filters } from 'src/common';
 import {
-  ZodValidationPipe,
   SwaggerSafeController,
+  SwaggerSafeDelete,
   SwaggerSafeGet,
   SwaggerSafePatch,
-  SwaggerSafeDelete,
   SwaggerSafePost,
-  OrderDto,
-} from 'src/core';
+} from 'src/common';
 import { AdvisorService } from './advisor.service';
 import {
   CreateAdvisorByListDto,
@@ -34,8 +33,16 @@ export class AdvisorController {
     @Query('search') search: string,
     @Query('searchIn') searchIn: string,
     @Query('orderBy') order: OrderDto[],
+    @Query('filters') filters: Filters,
   ) {
-    return this.advisorService.find(+page, +perPage, search, searchIn, order);
+    return this.advisorService.find(
+      +page,
+      +perPage,
+      search,
+      searchIn,
+      order,
+      filters,
+    );
   }
 
   @SwaggerSafeGet({ path: ':id', type: Advisor })

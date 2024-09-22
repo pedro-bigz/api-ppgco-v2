@@ -8,7 +8,6 @@ import { JwtService } from '@nestjs/jwt';
 import bcrypt from 'bcryptjs';
 import _map from 'lodash/map';
 import _pick from 'lodash/pick';
-import { dayjs } from 'src/core';
 
 import { Permission, PermissionsService } from 'src/permissions';
 import { User, UserService } from 'src/user';

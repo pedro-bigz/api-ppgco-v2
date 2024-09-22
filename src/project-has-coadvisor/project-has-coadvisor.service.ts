@@ -5,52 +5,23 @@ import {
   CreateProjectHasCoadvisorDto,
   UpdateProjectHasCoadvisorDto,
 } from './dto';
-import { AppListing, OrderDto, Query } from 'src/core';
+import { CommonService, CreationAdditionalData } from 'src/common';
 import { Optional, Transaction } from 'sequelize';
 import { Op } from 'sequelize';
 
-type CoadvisorCreationAdditionalData = {
-  transaction?: Transaction;
-};
-
 @Injectable()
-export class ProjectHasCoadvisorService {
+export class ProjectHasCoadvisorService extends CommonService<
+  ProjectHasCoadvisor,
+  typeof ProjectHasCoadvisor
+> {
   public constructor(
-    @Inject(PROJECT_HAS_COADVISOR_REPOSITORY)
-    private readonly projectHasCoadvisorModel: typeof ProjectHasCoadvisor,
-  ) {}
-
-  public findAll() {
-    return this.projectHasCoadvisorModel.findAll();
-  }
-
-  public async find(
-    page: number,
-    perPage: number,
-    search: string,
-    searchIn: string = 'id',
-    order: OrderDto[],
+    @Inject(PROJECT_HAS_COADVISOR_REPOSITORY) model: typeof ProjectHasCoadvisor,
   ) {
-    return AppListing.create<typeof ProjectHasCoadvisor, ProjectHasCoadvisor>(
-      this.projectHasCoadvisorModel,
-    )
-      ?.attachPagination(page, perPage)
-      ?.attachMultipleOrder(order || [['id', 'DESC']])
-      ?.attachSearch(search, searchIn)
-      ?.modifyQuery((query: Query<ProjectHasCoadvisor>) => {
-        return {
-          ...query,
-        };
-      })
-      ?.get();
-  }
-
-  public findOne(id: number) {
-    return this.projectHasCoadvisorModel.findOne({ where: { id } });
+    super(model);
   }
 
   public async findFrom(projectId: number) {
-    const coadvisors = await this.projectHasCoadvisorModel.findAll({
+    const coadvisors = await this.model.findAll({
       where: { project_id: projectId },
     });
 
@@ -58,30 +29,26 @@ export class ProjectHasCoadvisorService {
   }
 
   public async findFromDeleteds(projectId: number) {
-    const coadvisors = await this.projectHasCoadvisorModel
-      .scope('withTrashed')
-      .findAll({
-        where: { project_id: projectId, deleted_at: { [Op.not]: null } },
-      });
+    const coadvisors = await this.model.scope('withTrashed').findAll({
+      where: { project_id: projectId, deleted_at: { [Op.not]: null } },
+    });
 
     return coadvisors;
   }
 
   public async findFromWithDeleteds(projectId: number) {
-    const coadvisors = await this.projectHasCoadvisorModel
-      .scope('withTrashed')
-      .findAll({
-        where: { project_id: projectId },
-      });
+    const coadvisors = await this.model.scope('withTrashed').findAll({
+      where: { project_id: projectId },
+    });
 
     return coadvisors;
   }
 
   public create(
     createProjectHasCoadvisorDto: CreateProjectHasCoadvisorDto,
-    additionalData?: CoadvisorCreationAdditionalData,
+    additionalData?: CreationAdditionalData,
   ) {
-    return this.projectHasCoadvisorModel.create(
+    return this.model.create(
       {
         ...createProjectHasCoadvisorDto,
       },
@@ -91,9 +58,9 @@ export class ProjectHasCoadvisorService {
 
   public bulkCreate(
     createProjectHasCoadvisorDto: CreateProjectHasCoadvisorDto[],
-    additionalData?: CoadvisorCreationAdditionalData,
+    additionalData?: CreationAdditionalData,
   ) {
-    return this.projectHasCoadvisorModel.bulkCreate(
+    return this.model.bulkCreate(
       createProjectHasCoadvisorDto as Optional<any, string>[],
       additionalData,
     );
@@ -103,17 +70,13 @@ export class ProjectHasCoadvisorService {
     id: number,
     updateProjectHasCoadvisorDto: UpdateProjectHasCoadvisorDto,
   ) {
-    return this.projectHasCoadvisorModel.update(updateProjectHasCoadvisorDto, {
+    return this.model.update(updateProjectHasCoadvisorDto, {
       where: { id },
     });
   }
 
-  public remove(id: number) {
-    return this.projectHasCoadvisorModel.destroy({ where: { id } });
-  }
-
   public removeAdvisorFrom(advisorsId: number, projectId: number) {
-    return this.projectHasCoadvisorModel.destroy({
+    return this.model.destroy({
       where: { advisor_id: advisorsId, project_id: projectId },
     });
   }
@@ -122,13 +85,13 @@ export class ProjectHasCoadvisorService {
     advisorsIdList: number[],
     projectId: number,
   ) {
-    return this.projectHasCoadvisorModel.destroy({
+    return this.model.destroy({
       where: { advisor_id: { [Op.in]: advisorsIdList }, project_id: projectId },
     });
   }
 
   public removeFrom(projectId: number) {
-    return this.projectHasCoadvisorModel.destroy({
+    return this.model.destroy({
       where: { project_id: projectId },
     });
   }

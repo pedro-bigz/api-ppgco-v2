@@ -1,30 +1,26 @@
-import { Module } from '@nestjs/common';
+import { Logger, Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { SequelizeModule } from '@nestjs/sequelize';
 import { JwtModule } from '@nestjs/jwt';
-import { ENV, SequelizeConfig } from 'src/core';
+import { SequelizeConfig } from 'src/config';
 import { AuthService, AuthController, AuthModule } from './auth';
 import { User, UserModule } from './user';
 import { CrudGeneratorModule, crudGeneratorCommands } from './crud-generator';
-import { StudentModule, Student } from './student';
-import { MilestoneModule, Milestone } from './milestone';
+import { StudentModule, Student, VStudent } from './student';
+import { MilestoneModule, Milestone, VMilestone } from './milestone';
 import {
   MilestoneDocumentModule,
   MilestoneDocument,
 } from './milestone-document';
 import { ProjectModule, Project } from './project';
-import { AdvisorModule, Advisor } from './advisor';
+import { AdvisorModule, Advisor, VAdvisor } from './advisor';
 import { ResearchLineModule, ResearchLine } from './research-line';
 import {
   DisconnectedStudentModule,
   DisconnectedStudent,
 } from './disconnected-student';
 import { MilestoneHistoryModule, MilestoneHistory } from './milestone-history';
-import { PublicationModule, Publication } from './publication';
-import {
-  PublicationProjectModule,
-  PublicationProject,
-} from './publication-project';
+import { PublicationModule, Publication, VPublication } from './publication';
 import {
   ProjectHasCoadvisorModule,
   ProjectHasCoadvisor,
@@ -41,7 +37,7 @@ import { MailerModule } from './mailer';
 import { Activation, ActivationsModule } from './activations';
 import { EmailVerificationModule } from './email-verification';
 import { CoursesModule, Course } from './courses';
-import { SubjectsModule, Subject } from './subjects';
+import { SubjectsModule, Subject, VSubject } from './subjects';
 import { SystemApliancesModule, SystemApliance } from './system-apliances';
 import {
   UserHasPermissionsModule,
@@ -58,9 +54,12 @@ import {
   Notification,
   NotificationUsers,
 } from './notifications';
+import {
+  PublicationCoauthorsModule,
+  PublicationCoauthor,
+} from './publication-coauthors';
 // {IMPORTS} Don't delete me, I'm used for automatic code generation
 
-const env = ENV();
 const orm = {
   tables: [
     User,
@@ -68,7 +67,6 @@ const orm = {
     MilestoneDocument,
     Project,
     Publication,
-    PublicationProject,
     Student,
     Advisor,
     ResearchLine,
@@ -89,9 +87,10 @@ const orm = {
     MilestoneSituation,
     Notification,
     NotificationUsers,
+    PublicationCoauthor,
     // {MODELS} Don't delete me, I'm used for automatic code generation
   ],
-  views: [],
+  views: [VMilestone, VSubject, VPublication, VStudent, VAdvisor],
 };
 
 console.log({ orm });
@@ -102,12 +101,11 @@ console.log({ orm });
     SequelizeModule.forRoot(
       SequelizeConfig.configure({
         models: [...orm.tables, ...orm.views],
-        // models: [__dirname + '/**/entities/*.entity.ts'],
       }),
     ),
     JwtModule.register({
       global: true,
-      secret: env.JWT_SECRET_KEY,
+      secret: process.env.JWT_SECRET_KEY,
     }),
     UserModule,
     AuthModule,
@@ -121,7 +119,6 @@ console.log({ orm });
     ResearchLineModule,
     DisconnectedStudentModule,
     MilestoneHistoryModule,
-    PublicationProjectModule,
     ProjectHasCoadvisorModule,
     RolesModule,
     UserHasRolesModule,
@@ -139,10 +136,11 @@ console.log({ orm });
     MilestoneSituationModule,
     DefaultMilestonesModule,
     NotificationsModule,
+    PublicationCoauthorsModule,
     // {MODULE} Don't delete me, I'm used for automatic code generation
   ],
   controllers: [AuthController],
-  providers: [AuthService, ...crudGeneratorCommands],
+  providers: [AuthService, Logger, ...crudGeneratorCommands],
   exports: [AuthService, ...crudGeneratorCommands],
 })
 export class AppModule {}

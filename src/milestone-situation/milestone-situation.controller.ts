@@ -1,5 +1,6 @@
 import { Body, Query, Param } from '@nestjs/common';
-import { OrderDto, SwaggerSafeController, SwaggerSafeGet } from 'src/core';
+import { OrderDto } from 'src/common';
+import { SwaggerSafeController, SwaggerSafeGet } from 'src/common';
 import { MilestoneSituationService } from './milestone-situation.service';
 import { MilestoneSituation } from './entities';
 

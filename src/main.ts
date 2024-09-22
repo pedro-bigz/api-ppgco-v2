@@ -1,14 +1,22 @@
-import { NestFactory, Reflector } from '@nestjs/core';
-import { AppModule } from './app.module';
-import { AppSwagger } from './app.swagger';
-import { configHelper } from 'src/core';
-import { PermissionGuard, PermissionsService } from './permissions';
+import { Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { RolesService } from './roles';
-import { RoleHasPermissionsService } from './role-has-permissions';
+import { NestExpressApplication } from '@nestjs/platform-express';
+import { HttpAdapterHost, NestFactory, Reflector } from '@nestjs/core';
+import { AllExceptionsFilter, configHelper } from 'src/common';
+import { PermissionGuard, PermissionsService } from 'src/permissions';
+import { RoleHasPermissionsService } from 'src/role-has-permissions';
+import { AppModule } from 'src/app.module';
+import { AppSwagger } from 'src/app.swagger';
+import { AppConfig } from 'src/app.config';
+import { AppLogger } from 'src/app.logger';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  AppConfig.configure();
+
+  const app = await NestFactory.create<NestExpressApplication>(AppModule, {
+    logger: AppLogger.create(configHelper.isProduction()).config(),
+  });
+
   app.useGlobalGuards(
     new PermissionGuard(
       app.get(Reflector),
@@ -16,6 +24,13 @@ async function bootstrap() {
       app.get(PermissionsService),
       app.get(RoleHasPermissionsService),
     ),
+  );
+
+  app.useBodyParser('json', { limit: '25mb' });
+  app.useBodyParser('urlencoded', { limit: '25mb' });
+
+  app.useGlobalFilters(
+    new AllExceptionsFilter(app.get(HttpAdapterHost), app.get(Logger)),
   );
 
   if (!configHelper.isProduction()) {

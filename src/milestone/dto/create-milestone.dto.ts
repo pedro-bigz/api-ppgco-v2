@@ -1,7 +1,7 @@
 import { z } from 'zod';
 import { isValid, toIsoString } from 'src/utils';
 import { createMilestoneDocumentSchema } from 'src/milestone-document';
-import { customCreateZodDto } from 'src/core';
+import { customCreateZodDto } from 'src/common';
 
 export const createMilestoneSchema = z.object({
   project_ids: z.array(z.number()),

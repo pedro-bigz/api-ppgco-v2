@@ -9,7 +9,13 @@ import bcrypt from 'bcryptjs';
 import _map from 'lodash/map';
 import _omit from 'lodash/omit';
 
-import { AppListing, Filters, OrderDto, Query } from 'src/core';
+import {
+  CommonListing,
+  CommonService,
+  Filters,
+  OrderDto,
+  Query,
+} from 'src/common';
 import { USER_REPOSITORY } from './user.constants';
 import { User } from './entities/user.entity';
 import { CreateUserDto, UpdateUserDto } from './dto';
@@ -37,17 +43,18 @@ interface CreateOptions extends SequelizeCreateOptions<Attributes<User>> {
 }
 
 @Injectable()
-export class UserService {
+export class UserService extends CommonService<User, typeof User> {
   public constructor(
-    @Inject(USER_REPOSITORY)
-    private readonly userModel: typeof User,
+    @Inject(USER_REPOSITORY) model: typeof User,
     private readonly sequelize: Sequelize,
     private readonly rolesService: RolesService,
     private readonly mailerService: MailerService,
     private readonly configService: ConfigService,
     private readonly userHasRolesService: UserHasRolesService,
     private readonly activationsService: ActivationsService,
-  ) {}
+  ) {
+    super(model);
+  }
 
   public async create(dto: CreateUserDto, options?: CreateOptions) {
     const { email, password, roles: roleNames, ...createUserDto } = dto;
@@ -58,7 +65,7 @@ export class UserService {
     }
 
     const createUser = async (transaction: Transaction) => {
-      const user = await this.userModel.create(
+      const user = await this.model.create(
         {
           ...createUserDto,
           activated: 0,
@@ -103,15 +110,15 @@ export class UserService {
     order: OrderDto[],
     filters?: Filters,
   ) {
-    const columns = Object.keys(
-      _omit(this.userModel.getAttributes(), 'password'),
-    );
-    return AppListing.create<typeof User, User>(this.userModel)
-      ?.attachPagination(page, perPage)
-      ?.attachMultipleOrder(order || [['id', 'DESC']])
-      ?.attachSearch(search, searchIn)
-      ?.attachFilters(filters ?? {})
-      ?.get(columns);
+    const columns = Object.keys(_omit(this.model.getAttributes(), 'password'));
+    return this.attachPaginatedListing(
+      page,
+      perPage,
+      search,
+      searchIn,
+      order,
+      filters,
+    )?.get(columns);
   }
 
   public omitPassword(user: User) {
@@ -119,13 +126,19 @@ export class UserService {
   }
 
   public async findOne(id: number): Promise<User | null> {
-    return this.userModel.findOne({ where: { id } });
+    return this.model.findOne({ where: { id } });
   }
 
-  public async exists(id: number): Promise<boolean> {
-    return this.userModel
-      .count({ where: { id } })
-      .then<boolean>((response) => response > 0);
+  public async findOneScoped(scope: string, id: number): Promise<User | null> {
+    return this.model.scope(scope).findOne({ where: { id } });
+  }
+
+  public async findOneWithRoles(id: number): Promise<User | null> {
+    return this.findOneScoped('withRoles', id);
+  }
+
+  public async findOneWithoutSensiteData(id: number): Promise<User | null> {
+    return this.findOneScoped('findOneWithoutSensiteData', id);
   }
 
   public omitSensitiveData(user: User) {
@@ -139,12 +152,18 @@ export class UserService {
     );
   }
 
+  public async exists(id: number): Promise<boolean> {
+    return this.model
+      .count({ where: { id } })
+      .then<boolean>((response) => response > 0);
+  }
+
   public findByEmail(email: string): Promise<User | null> {
-    return this.userModel.scope('full').findOne({ where: { email } });
+    return this.model.scope('full').findOne({ where: { email } });
   }
 
   public async update(id: number, updateUserDto: UpdateUserDto) {
-    return this.userModel.update(updateUserDto, { where: { id } });
+    return this.model.update(updateUserDto, { where: { id } });
   }
 
   public async setLastLogin(user: User | number) {
@@ -153,14 +172,14 @@ export class UserService {
       return user.save();
     }
 
-    return this.userModel.update(
+    return this.model.update(
       { last_login_at: new Date() },
       { where: { id: user } },
     );
   }
 
   public remove(id: number) {
-    return this.userModel.destroy({ where: { id } });
+    return this.model.destroy({ where: { id } });
   }
 
   public async setEmailAsVerified(email: string) {

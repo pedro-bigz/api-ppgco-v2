@@ -1,4 +1,4 @@
-import { PaginatedResponse } from 'src/core';
+import { PaginatedResponse } from 'src/common';
 import { Notification } from '../entities';
 import { ApiProperty } from '@nestjs/swagger';
 

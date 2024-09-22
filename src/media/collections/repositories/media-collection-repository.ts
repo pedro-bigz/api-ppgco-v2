@@ -1,7 +1,7 @@
 import { HasMedia } from 'src/media/abstracts';
 import { Media, MediaInputData } from 'src/media/entities';
 import { Model, Sequelize } from 'sequelize-typescript';
-import { SequelizeConfig } from 'src/core';
+import { SequelizeConfig } from 'src/config';
 
 export class MediaCollectionRepository {
   constructor(

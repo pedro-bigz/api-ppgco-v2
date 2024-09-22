@@ -5,3 +5,4 @@ export * from './strContains';
 export * from './randomString';
 export * from './convertTabsInSpaces';
 export * from './formatFones';
+export * from './formatCourseName';

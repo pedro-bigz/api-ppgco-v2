@@ -1,7 +1,8 @@
 import { z } from 'zod';
 import { ApiProperty } from '@nestjs/swagger';
 import { isValid, toIsoString } from 'src/utils';
-import { customCreateZodDto } from 'src/core';
+import { customCreateZodDto } from 'src/common';
+import { createPublicationCoauthorsSchema } from 'src/publication-coauthors';
 
 export const createPublicationSchema = z.object({
   project_ids: z.array(z.number()).optional(),
@@ -15,6 +16,7 @@ export const createPublicationSchema = z.object({
     .custom(isValid.date, 'Data')
     .or(z.literal(''))
     .transform(toIsoString),
+  coauthors: createPublicationCoauthorsSchema.array(),
 });
 
 export class CreatePublicationDto extends customCreateZodDto(

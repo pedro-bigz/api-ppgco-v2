@@ -2,11 +2,11 @@ import { Module } from '@nestjs/common';
 import { PublicationService } from './publication.service';
 import { PublicationController } from './publication.controller';
 import { publicationProviders } from './publication.providers';
-import { PublicationProjectModule } from 'src/publication-project';
 import { StudentModule } from 'src/student';
+import { PublicationCoauthorsModule } from 'src/publication-coauthors';
 
 @Module({
-  imports: [StudentModule, PublicationProjectModule],
+  imports: [StudentModule, PublicationCoauthorsModule],
   controllers: [PublicationController],
   providers: [PublicationService, ...publicationProviders],
 })

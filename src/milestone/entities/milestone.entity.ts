@@ -1,29 +1,32 @@
 import {
+  AfterFind,
   BeforeUpdate,
   BelongsTo,
   Column,
   CreatedAt,
+  DataType,
   DefaultScope,
   DeletedAt,
   ForeignKey,
   HasMany,
   Model,
+  Scopes,
   Table,
   UpdatedAt,
 } from 'sequelize-typescript';
 import { Project } from 'src/project/entities';
 import { MilestoneDocument } from 'src/milestone-document/entities';
 import { MilestoneSituation } from 'src/milestone-situation/entities';
-
-// export type MilestoneSituation =
-//   | 'concluido'
-//   | 'em_andamento'
-//   | 'documentacao_pendente'
-//   | 'aguardando_validacao'
-//   | 'nao_iniciado';
+import { Student } from 'src/student';
 
 @DefaultScope(() => ({
+  attributes: ['*'],
   include: [Project, MilestoneDocument, MilestoneSituation],
+}))
+@Scopes(() => ({
+  full: {
+    include: [Project, Student, MilestoneDocument, MilestoneSituation],
+  },
 }))
 @Table({ tableName: 'milestone' })
 export class Milestone extends Model {
@@ -70,4 +73,12 @@ export class Milestone extends Model {
 
   @BelongsTo(() => MilestoneSituation)
   situation: MilestoneSituation;
+
+  @Column(DataType.VIRTUAL)
+  get studentProject() {
+    return (
+      this.project.dataValues.name +
+      this.project.dataValues.student.dataValues.name
+    );
+  }
 }

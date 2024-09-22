@@ -1,6 +1,6 @@
 import { Inject, Injectable } from '@nestjs/common';
 import _capitalize from 'lodash/capitalize';
-import { AppListing, OrderDto, Query } from 'src/core';
+import { CommonListing, CommonService, OrderDto, Query } from 'src/common';
 import { USER_HAS_ROLES_REPOSITORY } from './user-has-roles.constants';
 import { UserHasRole } from './entities';
 import { CreateUserHasRolesDto, UpdateUserHasRolesDto } from './dto';
@@ -9,14 +9,14 @@ import { Role } from 'src/roles';
 import { Attributes, BulkCreateOptions, Transaction } from 'sequelize';
 
 @Injectable()
-export class UserHasRolesService {
+export class UserHasRolesService extends CommonService<
+  UserHasRole,
+  typeof UserHasRole
+> {
   public constructor(
-    @Inject(USER_HAS_ROLES_REPOSITORY)
-    private readonly userHasRoleModel: typeof UserHasRole,
-  ) {}
-
-  public findAll() {
-    return this.userHasRoleModel.findAll();
+    @Inject(USER_HAS_ROLES_REPOSITORY) model: typeof UserHasRole,
+  ) {
+    super(model);
   }
 
   public async find(
@@ -26,9 +26,7 @@ export class UserHasRolesService {
     searchIn: string = 'role_id',
     order: OrderDto[],
   ) {
-    return AppListing.create<typeof UserHasRole, UserHasRole>(
-      this.userHasRoleModel,
-    )
+    return CommonListing.create<UserHasRole, typeof UserHasRole>(this.model)
       ?.attachPagination(page, perPage)
       ?.attachMultipleOrder(order || [['role_id', 'DESC']])
       ?.attachSearch(search, searchIn)
@@ -41,18 +39,18 @@ export class UserHasRolesService {
   }
 
   public findOne(role_id: number) {
-    return this.userHasRoleModel.findOne({ where: { role_id } });
+    return this.model.findOne({ where: { role_id } });
   }
 
   public create(createUserHasRolesDto: CreateUserHasRolesDto) {
-    return this.userHasRoleModel.create({ ...createUserHasRolesDto });
+    return this.model.create({ ...createUserHasRolesDto });
   }
 
   public bulkCreate(
     createMultipleUserHasRolesDto: CreateUserHasRolesDto[],
     options?: BulkCreateOptions<Attributes<UserHasRole>>,
   ) {
-    return this.userHasRoleModel.bulkCreate(
+    return this.model.bulkCreate(
       createMultipleUserHasRolesDto.map((item) => ({ ...item })),
       options,
     );
@@ -73,12 +71,12 @@ export class UserHasRolesService {
   }
 
   public update(role_id: number, updateUserHasRolesDto: UpdateUserHasRolesDto) {
-    return this.userHasRoleModel.update(updateUserHasRolesDto, {
+    return this.model.update(updateUserHasRolesDto, {
       where: { role_id },
     });
   }
 
   public remove(role_id: number) {
-    return this.userHasRoleModel.destroy({ where: { role_id } });
+    return this.model.destroy({ where: { role_id } });
   }
 }

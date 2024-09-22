@@ -1,5 +1,4 @@
-import { dayjs } from 'src/core';
-import { now } from 'lodash';
+import dayjs from 'dayjs';
 
 export function isValidPastDate(dateStr?: string | unknown, format?: string) {
   if (typeof dateStr !== 'string' || dateStr?.length < 10) {

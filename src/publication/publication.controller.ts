@@ -1,19 +1,12 @@
+import { Body, Query, Param, BadRequestException } from '@nestjs/common';
+import { ZodValidationPipe, OrderDto, Filters } from 'src/common';
 import {
-  Body,
-  Query,
-  Param,
-  BadRequestException,
-  InternalServerErrorException,
-} from '@nestjs/common';
-import {
-  ZodValidationPipe,
   SwaggerSafeController,
-  SwaggerSafeGet,
-  SwaggerSafePost,
-  SwaggerSafePatch,
   SwaggerSafeDelete,
-  OrderDto,
-} from 'src/core';
+  SwaggerSafeGet,
+  SwaggerSafePatch,
+  SwaggerSafePost,
+} from 'src/common';
 import {
   CreatePublicationDto,
   PaginatedPublicationDto,
@@ -25,23 +18,23 @@ import { Can } from 'src/permissions';
 import { PublicationService } from './publication.service';
 import { Permissions } from './publication.enum';
 import { Publication } from './entities';
-import { RequestUser, User } from 'src/user';
+import { CurrentUser, User } from 'src/user';
 import { ROLES } from 'src/roles';
-import { StudentService } from 'src/student';
 
-@SwaggerSafeController('publication')
+@SwaggerSafeController('publications')
 export class PublicationController {
   public constructor(private readonly publicationService: PublicationService) {}
 
   @SwaggerSafeGet({ type: PaginatedPublicationDto })
   @Can(Permissions.List)
   public findAll(
-    @RequestUser() user: User,
+    @CurrentUser() user: User,
     @Query('page') page: string,
     @Query('perPage') perPage: string,
     @Query('search') search: string,
     @Query('searchIn') searchIn: string,
     @Query('orderBy') order: OrderDto[],
+    @Query('filters') filters: Filters,
   ) {
     return this.publicationService.find(
       +page,
@@ -49,6 +42,7 @@ export class PublicationController {
       search,
       searchIn,
       order,
+      filters,
       user,
     );
   }
@@ -62,7 +56,7 @@ export class PublicationController {
   @SwaggerSafePost({ type: Publication })
   @Can(Permissions.Create)
   public async create(
-    @RequestUser() user: User,
+    @CurrentUser() user: User,
     @Body(new ZodValidationPipe(createPublicationSchema))
     { project_ids, ...createPublicationDto }: CreatePublicationDto,
   ) {

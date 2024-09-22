@@ -2,10 +2,12 @@ import {
   Column,
   CreatedAt,
   DeletedAt,
+  ForeignKey,
   Model,
   Table,
   UpdatedAt,
 } from 'sequelize-typescript';
+import { Project } from 'src/project/entities';
 
 @Table({ tableName: 'publication' })
 export class Publication extends Model {
@@ -23,6 +25,10 @@ export class Publication extends Model {
 
   @Column
   end_date: Date;
+
+  @Column
+  @ForeignKey(() => Project)
+  project_id: number;
 
   @CreatedAt
   created_at: Date;
