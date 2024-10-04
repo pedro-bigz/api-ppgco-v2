@@ -3,10 +3,12 @@ import {
   CreatedAt,
   DeletedAt,
   ForeignKey,
+  HasMany,
   Model,
   Table,
   UpdatedAt,
 } from 'sequelize-typescript';
+import { Milestone } from 'src/milestone/entities';
 import { User } from 'src/user/entities';
 
 @Table({ tableName: 'v_student' })
@@ -48,6 +50,21 @@ export class VStudent extends Model {
   forbidden: boolean;
 
   @Column
+  course_id: number;
+
+  @Column
+  course_name: string;
+
+  @Column
+  advisor_id: number;
+
+  @Column
+  research_line_id: number;
+
+  @Column
+  project_id: number;
+
+  @Column
   project_title: string;
 
   @Column
@@ -68,4 +85,7 @@ export class VStudent extends Model {
 
   @DeletedAt
   deleted_at: Date;
+
+  @HasMany(() => Milestone, 'project_id')
+  milestones: Milestone[];
 }

@@ -9,6 +9,7 @@ import {
   FindOptions,
   Transaction,
   CreateOptions as SequelizeCreateOptions,
+  ProjectionAlias,
 } from 'sequelize';
 import {
   CommonListing,
@@ -73,6 +74,83 @@ export class AdvisorService {
       ?.attachSearch(search, searchIn)
       ?.attachFilters(filters || {})
       ?.get();
+  }
+
+  public count(
+    search: string,
+    searchIn: string,
+    attributes: string | string[],
+  ) {
+    const options = { attributes: [] as string[] };
+
+    if (searchIn) {
+      options['where'] = { [searchIn]: search };
+    }
+
+    if (attributes) {
+      options['attributes'] = Array.isArray(attributes)
+        ? attributes
+        : [attributes];
+    }
+
+    return this.view.findAll({
+      ...options,
+      attributes: [
+        ...options['attributes'],
+        [Sequelize.fn('COUNT', Sequelize.col('*')), 'value'],
+      ],
+    });
+  }
+
+  public groupedCount(
+    search: string,
+    searchIn: string,
+    groupBy: string,
+    attributes: string | string[],
+  ) {
+    const options = {
+      attributes: [groupBy, [groupBy, 'key']] as (string | ProjectionAlias)[],
+    };
+
+    if (searchIn) {
+      options['where'] = { [searchIn]: search };
+    }
+
+    if (attributes) {
+      options['attributes'] = Array.isArray(attributes)
+        ? [...options['attributes'], ...attributes]
+        : [...options['attributes'], attributes];
+    }
+
+    options['group'] = [groupBy];
+
+    return this.view.findAll({
+      ...options,
+      attributes: [
+        ...options['attributes'],
+        [Sequelize.fn('COUNT', Sequelize.col('*')), 'value'],
+      ],
+    });
+  }
+
+  public async countStudentsByAdvisor() {
+    const [counting] = await this.sequelize.query(
+      `
+        SELECT
+          adv.id,
+          adv.advisor_name,
+          adv.research_line_title,
+          (
+            SELECT count(1)
+            FROM v_student AS std
+            WHERE std.advisor_id = adv.id
+          ) AS students_counting
+        FROM v_advisor AS adv
+        HAVING students_counting > 0
+      `,
+    );
+
+    return counting;
   }
 
   public async create(

@@ -49,17 +49,43 @@ export class StudentController {
     );
   }
 
-  // @SwaggerSafeGet({ path: '/count', type: Number })
-  // @Can(Permissions.List)
-  // public count(
-  //   @Query('search') search: string,
-  //   @Query('searchIn') searchIn: string,
-  //   @Query('groupBy') groupBy: string,
-  //   @Query('attributes') attributes: string | string[],
-  // ) {
-  //   console.log({ attributes });
-  //   return this.studentService.count(search, searchIn, groupBy, attributes);
-  // }
+  @SwaggerSafeGet({ path: '/count', type: Number })
+  @Can(Permissions.List)
+  public count(
+    @Query('search') search: string,
+    @Query('searchIn') searchIn: string,
+    @Query('groupBy') groupBy: string,
+    @Query('attributes') attributes: string | string[],
+  ) {
+    if (!groupBy) {
+      return this.studentService.count(search, searchIn, attributes);
+    }
+
+    return this.studentService.groupedCount(
+      search,
+      searchIn,
+      groupBy,
+      attributes,
+    );
+  }
+
+  @SwaggerSafeGet({
+    path: '/count-with-late-milestones-by-course',
+    type: Number,
+  })
+  @Can(Permissions.List)
+  public countWithLateMilestonesByCourse() {
+    return this.studentService.countStudentsWithLateMilestonesByCourse();
+  }
+
+  @SwaggerSafeGet({
+    path: '/get-with-late-milestones',
+    type: Number,
+  })
+  @Can(Permissions.List)
+  public getWithLateMilestones() {
+    return this.studentService.getStudentsWithLateMilestones();
+  }
 
   @SwaggerSafeGet({ path: ':id', type: Student })
   @Can(Permissions.Read)

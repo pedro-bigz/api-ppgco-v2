@@ -19,10 +19,6 @@ export class SubjectsService {
     return this.model.findAll(options);
   }
 
-  private getListing() {
-    return CommonListing.create<VSubject, typeof VSubject>(this.view);
-  }
-
   public async find(
     page: number,
     perPage: number,
@@ -31,16 +27,12 @@ export class SubjectsService {
     order: OrderDto[],
     filters?: Filters,
   ) {
-    const r = await this.getListing()
+    return CommonListing.create<VSubject, typeof VSubject>(this.view)
       ?.attachPagination(page, perPage)
       ?.attachMultipleOrder(order)
       ?.attachSearch(search, searchIn)
       ?.attachFilters(filters ?? {})
       ?.get();
-
-    console.log({ r: r?.data });
-
-    return r;
   }
 
   public findOne(id: number, options?: FindOptions<Attributes<Subject>>) {

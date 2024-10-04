@@ -6,21 +6,18 @@ import _difference from 'lodash/difference';
 import { ROLES } from 'src/roles';
 import { User, UserService } from 'src/user';
 import { Project, ProjectService } from 'src/project';
-import { MilestoneService } from 'src/milestone';
+import { Milestone, MilestoneService } from 'src/milestone';
 import { onlyNumbers, randomString } from 'src/utils';
-import {
-  CommonListing,
-  CommonService,
-  Filters,
-  OrderDto,
-  Query,
-} from 'src/common';
+import { CommonListing, Filters, OrderDto } from 'src/common';
 import { ProjectHasCoadvisorService } from 'src/project-has-coadvisor';
 import { Student, VStudent } from './entities';
-import { STUDENT_REPOSITORY, V_STUDENT_REPOSITORY } from './student.constants';
+import {
+  LATE_MILESTONE_ID,
+  STUDENT_REPOSITORY,
+  V_STUDENT_REPOSITORY,
+} from './student.constants';
 import { CreateStudentDto, UpdateStudentDto } from './dto';
-import { Course } from 'src/courses';
-import { Attributes, FindOptions } from 'sequelize';
+import { Attributes, FindOptions, ProjectionAlias } from 'sequelize';
 
 @Injectable()
 export class StudentService {
@@ -71,6 +68,127 @@ export class StudentService {
       ?.attachSearch(search, searchIn)
       ?.attachFilters(filters ?? {})
       ?.get();
+  }
+
+  public countStudentsGroupByCourse() {
+    return this.view.findAll({
+      attributes: [
+        'course_id',
+        'course_name',
+        [Sequelize.fn('COUNT', Sequelize.col('*')), 'value'],
+      ],
+      group: ['course_id'],
+    });
+  }
+
+  public countStudentsGroupByRes() {
+    return this.view.findAll({
+      attributes: [
+        'research_line_id',
+        'research_line_title',
+        [Sequelize.fn('COUNT', Sequelize.col('*')), 'value'],
+      ],
+      group: ['research_line_id'],
+    });
+  }
+
+  public count(
+    search: string,
+    searchIn: string,
+    attributes: string | string[],
+  ) {
+    const options = { attributes: [] as string[] };
+
+    if (searchIn) {
+      options['where'] = { [searchIn]: search };
+    }
+
+    if (attributes) {
+      options['attributes'] = Array.isArray(attributes)
+        ? attributes
+        : [attributes];
+    }
+
+    return this.view.findAll({
+      ...options,
+      attributes: [
+        ...options['attributes'],
+        [Sequelize.fn('COUNT', Sequelize.col('*')), 'value'],
+      ],
+    });
+  }
+
+  public groupedCount(
+    search: string,
+    searchIn: string,
+    groupBy: string,
+    attributes: string | string[],
+  ) {
+    const options = {
+      attributes: [groupBy, [groupBy, 'key']] as (string | ProjectionAlias)[],
+    };
+
+    if (searchIn) {
+      options['where'] = { [searchIn]: search };
+    }
+
+    if (attributes) {
+      options['attributes'] = Array.isArray(attributes)
+        ? [...options['attributes'], ...attributes]
+        : [...options['attributes'], attributes];
+    }
+
+    options['group'] = [groupBy];
+
+    return this.view.findAll({
+      ...options,
+      attributes: [
+        ...options['attributes'],
+        [Sequelize.fn('COUNT', Sequelize.col('*')), 'value'],
+      ],
+    });
+  }
+
+  public async getStudentsWithLateMilestones() {
+    // return this.view.findAll({
+    //   attributes: ['course_name', 'student_name'],
+    //   include: [Milestone],
+    // });
+    const [counting] = await this.sequelize.query(
+      `
+        SELECT
+          std.*,
+          (
+            SELECT count(1)
+            FROM milestone AS ml
+            WHERE ml.project_id = std.project_id
+            AND ml.situation_id = :situation_id
+          ) AS late_milestones_counting
+        FROM v_student AS std
+        HAVING late_milestones_counting > 0
+      `,
+      { replacements: { situation_id: LATE_MILESTONE_ID } },
+    );
+
+    return counting;
+  }
+
+  public async countStudentsWithLateMilestonesByCourse() {
+    const [counting] = await this.sequelize.query(
+      `
+        SELECT
+          std.course_id AS \`key\`,
+          std.course_name,
+          COUNT(distinct(std.id)) AS value
+        FROM v_student AS std
+        INNER JOIN milestone AS ml ON std.project_id = ml.project_id
+        WHERE ml.situation_id = :situation_id
+        GROUP BY \`key\`
+      `,
+      { replacements: { situation_id: LATE_MILESTONE_ID } },
+    );
+
+    return counting;
   }
 
   public findWithProjectData(id: number) {

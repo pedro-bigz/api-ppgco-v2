@@ -9,11 +9,9 @@ import {
 } from 'src/common';
 import { AdvisorService } from './advisor.service';
 import {
-  CreateAdvisorByListDto,
   CreateAdvisorDto,
   PaginatedAdvisorDto,
   UpdateAdvisorDto,
-  createAdvisorByListSchema,
   createAdvisorSchema,
   updateAdvisorSchema,
 } from './dto';
@@ -43,6 +41,32 @@ export class AdvisorController {
       order,
       filters,
     );
+  }
+
+  @SwaggerSafeGet({ path: '/count', type: Number })
+  @Can(Permissions.List)
+  public count(
+    @Query('search') search: string,
+    @Query('searchIn') searchIn: string,
+    @Query('groupBy') groupBy: string,
+    @Query('attributes') attributes: string | string[],
+  ) {
+    if (!groupBy) {
+      return this.advisorService.count(search, searchIn, attributes);
+    }
+
+    return this.advisorService.groupedCount(
+      search,
+      searchIn,
+      groupBy,
+      attributes,
+    );
+  }
+
+  @SwaggerSafeGet({ path: '/count-students-by-advisor', type: Number })
+  @Can(Permissions.List)
+  public countStudentsByAdvisor() {
+    return this.advisorService.countStudentsByAdvisor();
   }
 
   @SwaggerSafeGet({ path: ':id', type: Advisor })
