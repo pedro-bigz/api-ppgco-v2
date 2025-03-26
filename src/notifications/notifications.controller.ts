@@ -1,12 +1,14 @@
-import { Body, Query, Param } from '@nestjs/common';
-import { OrderDto, ZodValidationPipe } from 'src/common';
 import {
-  SwaggerSafeController,
-  SwaggerSafeDelete,
-  SwaggerSafeGet,
-  SwaggerSafePatch,
-  SwaggerSafePost,
-} from 'src/common';
+  Body,
+  Query,
+  Param,
+  Controller,
+  Get,
+  Post,
+  Patch,
+  Delete,
+} from '@nestjs/common';
+import { OrderDto, ZodValidationPipe } from 'src/core';
 import { NotificationsService } from './notifications.service';
 import {
   CreateNotificationsDto,
@@ -15,14 +17,16 @@ import {
   updateNotificationsSchema,
 } from './dto';
 import { Notification } from './entities';
+import { ApiConflictResponse, ApiOkResponse } from '@nestjs/swagger';
 
-@SwaggerSafeController('notifications')
+@Controller('notifications')
 export class NotificationsController {
   public constructor(
     private readonly notificationsService: NotificationsService,
   ) {}
 
-  @SwaggerSafeGet({ type: Notification })
+  @Get()
+  @ApiOkResponse({ type: Notification })
   public findAll(
     @Query('page') page: string,
     @Query('perPage') perPage: string,
@@ -39,12 +43,14 @@ export class NotificationsController {
     );
   }
 
-  @SwaggerSafeGet({ path: ':id', type: Notification })
+  @Get(':id')
+  @ApiOkResponse({ type: Notification })
   public findOne(@Param('id') id: string) {
     return this.notificationsService.findOne(+id);
   }
 
-  @SwaggerSafePost({ type: Notification })
+  @Post()
+  @ApiConflictResponse({ type: Notification })
   public create(
     @Body(new ZodValidationPipe(createNotificationsSchema))
     createNotificationsDto: CreateNotificationsDto,
@@ -52,7 +58,7 @@ export class NotificationsController {
     return this.notificationsService.create(createNotificationsDto);
   }
 
-  @SwaggerSafePatch({ path: ':id' })
+  @Patch(':id')
   public async update(
     @Param('id') id: string,
     @Body(new ZodValidationPipe(updateNotificationsSchema))
@@ -68,7 +74,7 @@ export class NotificationsController {
     };
   }
 
-  @SwaggerSafeDelete({ path: ':id' })
+  @Delete(':id')
   public async destroy(@Param('id') id: string) {
     const deleteds = await this.notificationsService.remove(+id);
     return {

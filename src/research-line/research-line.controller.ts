@@ -1,12 +1,20 @@
-import { Body, Query, Param } from '@nestjs/common';
-import { ZodValidationPipe, OrderDto, Filters } from 'src/common';
 import {
-  SwaggerSafeController,
-  SwaggerSafeDelete,
-  SwaggerSafeGet,
-  SwaggerSafePatch,
-  SwaggerSafePost,
-} from 'src/common';
+  Body,
+  Query,
+  Param,
+  Controller,
+  Get,
+  Post,
+  Patch,
+  Delete,
+} from '@nestjs/common';
+import {
+  ZodValidationPipe,
+  OrderDto,
+  Filters,
+  DeleteSuccessResponse,
+  UpdateSuccessResponse,
+} from 'src/core';
 import { ResearchLineService } from './research-line.service';
 import {
   CreateResearchLineDto,
@@ -18,15 +26,17 @@ import { Can } from 'src/permissions';
 import { ResearchLine } from './entities';
 import { PaginatedResearchLineDto } from './dto/paginated-research-line.dto';
 import { Permissions } from './research-line.enum';
+import { ApiCreatedResponse, ApiOkResponse } from '@nestjs/swagger';
 
-@SwaggerSafeController('research-lines')
+@Controller('research-lines')
 export class ResearchLineController {
   public constructor(
     private readonly researchLineService: ResearchLineService,
   ) {}
 
-  @SwaggerSafeGet({ type: PaginatedResearchLineDto })
+  @Get()
   @Can(Permissions.List)
+  @ApiOkResponse({ type: PaginatedResearchLineDto })
   public findAll(
     @Query('page') page: string,
     @Query('perPage') perPage: string,
@@ -45,13 +55,15 @@ export class ResearchLineController {
     );
   }
 
-  @SwaggerSafeGet({ path: ':id', type: ResearchLine })
+  @Get(':id')
   @Can(Permissions.Read)
+  @ApiOkResponse({ type: ResearchLine })
   public findOne(@Param('id') id: string) {
     return this.researchLineService.findOne(+id);
   }
 
-  @SwaggerSafePost({ type: ResearchLine })
+  @Post()
+  @ApiCreatedResponse({ type: ResearchLine })
   @Can(Permissions.Create)
   public create(
     @Body(new ZodValidationPipe(createResearchLineSchema))
@@ -60,19 +72,32 @@ export class ResearchLineController {
     return this.researchLineService.create(createResearchLineDto);
   }
 
-  @SwaggerSafePatch({ path: ':id' })
+  @Patch(':id')
   @Can(Permissions.Update)
-  public update(
+  @ApiOkResponse({ type: UpdateSuccessResponse })
+  public async update(
     @Param('id') id: string,
     @Body(new ZodValidationPipe(updateResearchLineSchema))
     updateResearchLineDto: UpdateResearchLineDto,
   ) {
-    return this.researchLineService.update(+id, updateResearchLineDto);
+    const [updateds] = await this.researchLineService.update(
+      +id,
+      updateResearchLineDto,
+    );
+    return {
+      updateds,
+      message: 'Item atualizado com sucesso',
+    };
   }
 
-  @SwaggerSafeDelete({ path: ':id' })
+  @Delete(':id')
   @Can(Permissions.Delete)
-  public destroy(@Param('id') id: string) {
-    return this.researchLineService.remove(+id);
+  @ApiOkResponse({ type: DeleteSuccessResponse })
+  public async destroy(@Param('id') id: string) {
+    const deleteds = await this.researchLineService.remove(+id);
+    return {
+      message: 'Student deleted successfully',
+      deleteds,
+    };
   }
 }

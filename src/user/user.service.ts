@@ -1,46 +1,40 @@
+import { UsersPasswordResetService } from 'src/users-password-reset';
 import {
   Inject,
   Injectable,
   NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
-
-import bcrypt from 'bcryptjs';
-import _map from 'lodash/map';
-import _omit from 'lodash/omit';
-
-import {
-  CommonListing,
-  CommonService,
-  Filters,
-  OrderDto,
-  Query,
-} from 'src/common';
-import { USER_REPOSITORY } from './user.constants';
-import { User } from './entities/user.entity';
-import { CreateUserDto, UpdateUserDto } from './dto';
-import { Subject } from 'rxjs';
-import { MailerService } from 'src/mailer/mailer.service';
-import path from 'path';
-import { emailVerificationTemplate } from './templates/email-verification';
-import { generateToken } from 'src/utils';
 import { ConfigService } from '@nestjs/config';
-import { ActivationsService } from 'src/activations';
-import { UserHasRolesService } from 'src/user-has-roles';
-import { awaitAll, PromisePusherCallback } from 'src/utils/promises';
-import { Role, RolesService } from 'src/roles';
 import { Sequelize } from 'sequelize-typescript';
 import {
   Attributes,
   CreateOptions as SequelizeCreateOptions,
   Transaction,
 } from 'sequelize';
-import { Op } from 'sequelize';
+
+import bcrypt from 'bcryptjs';
+import _map from 'lodash/map';
+import _omit from 'lodash/omit';
+
+import { CommonService, Filters, OrderDto } from 'src/core';
+import { MailerService } from 'src/mailer';
+import { generateToken } from 'src/utils';
+import { Role, RolesService } from 'src/roles';
+import { ActivationsService } from 'src/activations';
+import { UserHasRolesService } from 'src/user-has-roles';
+import { USER_REPOSITORY } from './user.constants';
+import { CreateUserDto, UpdateUserDto } from './dto';
+import { awaitAll, PromisePusherCallback } from 'src/utils';
+import { User } from './entities/user.entity';
+import { forgotPasswordTemplate, emailVerificationTemplate } from './templates';
 
 interface CreateOptions extends SequelizeCreateOptions<Attributes<User>> {
   mailData?: string;
   files?: Record<string, Express.Multer.File[]>;
 }
+
+const PASSWORD_PADDING = 10;
 
 @Injectable()
 export class UserService extends CommonService<User, typeof User> {
@@ -52,6 +46,7 @@ export class UserService extends CommonService<User, typeof User> {
     private readonly configService: ConfigService,
     private readonly userHasRolesService: UserHasRolesService,
     private readonly activationsService: ActivationsService,
+    private readonly usersPasswordResetService: UsersPasswordResetService,
   ) {
     super(model);
   }
@@ -71,7 +66,7 @@ export class UserService extends CommonService<User, typeof User> {
           activated: 0,
           forbidden: 0,
           email,
-          password: bcrypt.hashSync(password, 10),
+          password: bcrypt.hashSync(password, PASSWORD_PADDING),
         },
         { ...sequelizeOptions, transaction },
       );
@@ -158,12 +153,28 @@ export class UserService extends CommonService<User, typeof User> {
       .then<boolean>((response) => response > 0);
   }
 
+  public async existsBy(
+    label: string,
+    value: string | number | boolean,
+  ): Promise<boolean> {
+    return this.model
+      .count({ where: { [label]: value } })
+      .then<boolean>((response) => response > 0);
+  }
+
   public findByEmail(email: string): Promise<User | null> {
     return this.model.scope('full').findOne({ where: { email } });
   }
 
   public async update(id: number, updateUserDto: UpdateUserDto) {
     return this.model.update(updateUserDto, { where: { id } });
+  }
+
+  public async updatePassword(id: number, password: string) {
+    const dto = {
+      password: bcrypt.hashSync(password, PASSWORD_PADDING),
+    };
+    return this.model.update(dto, { where: { id } });
   }
 
   public async setLastLogin(user: User | number) {
@@ -202,21 +213,46 @@ export class UserService extends CommonService<User, typeof User> {
     const token = generateToken(secret!, user.email, Date.now());
     const link = this.configService.get('EMAIL_VERIFICATION_BASE_URL') + token;
 
-    this.activationsService.createActivation({
-      token,
-      used: false,
-      email: user.email,
-    });
-
-    this.mailerService.sendMail((template) => ({
-      // to: user.email,
-      to: 'pedropaulo.spaiva.a@gmail.com',
-      subject: 'Verificação de e-mail PPGCO-UFU',
-      html: template(emailVerificationTemplate, {
-        link,
-        additionalData,
-        name: user.full_name,
+    return Promise.all([
+      this.activationsService.createActivation({
+        token,
+        used: false,
+        email: user.email,
       }),
-    }));
+      this.mailerService.sendMail((template) => ({
+        to: user.email,
+        subject: 'Verificação de e-mail PPGCO-UFU',
+        html: template(emailVerificationTemplate, {
+          link,
+          additionalData,
+          name: user.full_name,
+        }),
+      })),
+    ]);
+  }
+
+  public sendForgotPasswordEmail(user: User) {
+    const secret = this.configService.get('FORGOT_PASSWORD_TOKEN_SECRET');
+    const token = generateToken(secret!, user.email, Date.now());
+    const link =
+      this.configService.get('FORGOT_PASSWORD_TOKEN_BASE_URL') + token;
+
+    return Promise.all([
+      this.usersPasswordResetService.create({
+        token,
+        is_expired: false,
+        is_validated: false,
+        email: user.email,
+      }),
+      this.mailerService.sendMail((template) => ({
+        // to: user.email,
+        to: 'pedropaulo.spaiva.a@gmail.com',
+        subject: 'Resetar senha PPGCO-UFU',
+        html: template(forgotPasswordTemplate, {
+          link,
+          name: user.full_name,
+        }),
+      })),
+    ]);
   }
 }

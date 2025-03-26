@@ -1,7 +1,7 @@
 import { INestApplication } from '@nestjs/common';
 import { DocumentBuilder, OpenAPIObject, SwaggerModule } from '@nestjs/swagger';
 import { patchNestJsSwagger } from 'nestjs-zod';
-import { IS_PUBLIC_KEY } from './auth';
+import { IS_PUBLIC_KEY } from './core';
 
 type AppSwaggerDataType = {
   title: string;

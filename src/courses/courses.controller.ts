@@ -1,12 +1,19 @@
-import { Body, Query, Param } from '@nestjs/common';
-import { ZodValidationPipe, OrderDto } from 'src/common';
 import {
-  SwaggerSafeController,
-  SwaggerSafeDelete,
-  SwaggerSafeGet,
-  SwaggerSafePatch,
-  SwaggerSafePost,
-} from 'src/common';
+  Body,
+  Query,
+  Param,
+  Controller,
+  Get,
+  Post,
+  Patch,
+  Delete,
+} from '@nestjs/common';
+import {
+  ZodValidationPipe,
+  OrderDto,
+  DeleteSuccessResponse,
+  UpdateSuccessResponse,
+} from 'src/core';
 import { Can } from 'src/permissions';
 import { CoursesService } from './courses.service';
 import {
@@ -18,13 +25,15 @@ import {
 } from './dto';
 import { Course } from './entities';
 import { Permissions } from './courses.enum';
+import { ApiCreatedResponse, ApiOkResponse } from '@nestjs/swagger';
 
-@SwaggerSafeController('courses')
+@Controller('courses')
 export class CoursesController {
   public constructor(private readonly coursesService: CoursesService) {}
 
-  @SwaggerSafeGet({ type: PaginatedCourseDto })
+  @Get()
   @Can(Permissions.List)
+  @ApiOkResponse({ type: PaginatedCourseDto })
   public findAll(
     @Query('page') page: string,
     @Query('perPage') perPage: string,
@@ -35,14 +44,16 @@ export class CoursesController {
     return this.coursesService.find(+page, +perPage, search, searchIn, order);
   }
 
-  @SwaggerSafeGet({ path: ':id', type: Course })
+  @Get(':id')
+  @ApiOkResponse({ type: Course })
   @Can(Permissions.Read)
   public findOne(@Param('id') id: string) {
     return this.coursesService.findOne(+id);
   }
 
-  @SwaggerSafePost({ type: Course })
+  @Post()
   @Can(Permissions.Create)
+  @ApiCreatedResponse({ type: Course })
   public create(
     @Body(new ZodValidationPipe(createCoursesSchema))
     createCoursesDto: CreateCoursesDto,
@@ -50,8 +61,9 @@ export class CoursesController {
     return this.coursesService.create(createCoursesDto);
   }
 
-  @SwaggerSafePatch({ path: ':id' })
+  @Patch(':id')
   @Can(Permissions.Update)
+  @ApiOkResponse({ type: UpdateSuccessResponse })
   public async update(
     @Param('id') id: string,
     @Body(new ZodValidationPipe(updateCoursesSchema))
@@ -64,10 +76,11 @@ export class CoursesController {
     };
   }
 
-  @SwaggerSafeDelete({ path: ':id' })
+  @Delete(':id')
   @Can(Permissions.Delete)
-  public destroy(@Param('id') id: string) {
-    const deleteds = this.coursesService.remove(+id);
+  @ApiOkResponse({ type: DeleteSuccessResponse })
+  public async destroy(@Param('id') id: string) {
+    const deleteds = await this.coursesService.remove(+id);
     return {
       deleteds,
       message: 'Item deletado com sucesso',

@@ -1,5 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { CommonService } from 'src/common';
+import { CommonService } from 'src/core';
 import { ResearchLine } from './entities';
 import { RESEARCH_LINE_REPOSITORY } from './research-line.constants';
 import { CreateResearchLineDto, UpdateResearchLineDto } from './dto';

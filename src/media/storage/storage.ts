@@ -1,4 +1,3 @@
-import { BucketFileUpload } from 'src/bucket/bucket.types';
 import { DiskFactory } from '../disks/disk.factory';
 import { Disk } from '../disks/disk.interfaces';
 

@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { customCreateZodDto } from 'src/common';
+import { customCreateZodDto } from 'src/core';
 
 export const createDocumentsSchema = z.object({
   name: z.string().max(50),

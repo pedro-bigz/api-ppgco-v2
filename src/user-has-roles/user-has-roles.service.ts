@@ -1,6 +1,6 @@
 import { Inject, Injectable } from '@nestjs/common';
 import _capitalize from 'lodash/capitalize';
-import { CommonListing, CommonService, OrderDto, Query } from 'src/common';
+import { CommonListing, CommonService, OrderDto, Query } from 'src/core';
 import { USER_HAS_ROLES_REPOSITORY } from './user-has-roles.constants';
 import { UserHasRole } from './entities';
 import { CreateUserHasRolesDto, UpdateUserHasRolesDto } from './dto';

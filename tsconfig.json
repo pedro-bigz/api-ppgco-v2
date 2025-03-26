@@ -22,9 +22,9 @@
     "paths": {
       "src/*": ["./src/*"],
       "@app/*": ["./src/*"],
-      "@core": ["./src/common"],
+      "@core": ["src/core"],
       "@utils": ["./src/utils"],
-      "@core/*": ["./src/common/*"],
+      "@core/*": ["src/core/*"],
       "@utils/*": ["./src/utils/*"],
       "@dist/*": ["./dist/*"]
       // "@storage/*": ["./storage/*"]

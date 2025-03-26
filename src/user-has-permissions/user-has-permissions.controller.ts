@@ -1,12 +1,14 @@
-import { Body, Query, Param } from '@nestjs/common';
-import { ZodValidationPipe, OrderDto } from 'src/common';
 import {
-  SwaggerSafeController,
-  SwaggerSafeDelete,
-  SwaggerSafeGet,
-  SwaggerSafePatch,
-  SwaggerSafePost,
-} from 'src/common';
+  Body,
+  Query,
+  Param,
+  Controller,
+  Get,
+  Post,
+  Patch,
+  Delete,
+} from '@nestjs/common';
+import { ZodValidationPipe, OrderDto } from 'src/core';
 import { UserHasPermissionsService } from './user-has-permissions.service';
 import {
   CreateUserHasPermissionsDto,
@@ -15,14 +17,15 @@ import {
   updateUserHasPermissionsSchema,
 } from './dto';
 import { UserHasPermission } from './entities';
+import { ApiCreatedResponse, ApiOkResponse } from '@nestjs/swagger';
 
-@SwaggerSafeController('user-has-permissions')
+@Controller('user-has-permissions')
 export class UserHasPermissionsController {
   public constructor(
     private readonly userHasPermissionsService: UserHasPermissionsService,
   ) {}
 
-  @SwaggerSafeGet({ type: UserHasPermission })
+  @ApiOkResponse({ type: UserHasPermission })
   public findAll(
     @Query('page') page: string,
     @Query('perPage') perPage: string,
@@ -39,12 +42,14 @@ export class UserHasPermissionsController {
     );
   }
 
-  @SwaggerSafeGet({ path: ':id', type: UserHasPermission })
+  @Get(':id')
+  @ApiOkResponse({ type: UserHasPermission })
   public findOne(@Param('id') id: string) {
     return this.userHasPermissionsService.findOne(+id);
   }
 
-  @SwaggerSafePost({ type: UserHasPermission })
+  @Post()
+  @ApiCreatedResponse({ type: UserHasPermission })
   public create(
     @Body(new ZodValidationPipe(createUserHasPermissionsSchema))
     createUserHasPermissionsDto: CreateUserHasPermissionsDto,
@@ -52,7 +57,7 @@ export class UserHasPermissionsController {
     return this.userHasPermissionsService.create(createUserHasPermissionsDto);
   }
 
-  @SwaggerSafePatch({ path: ':id' })
+  @Patch(':id')
   public async update(
     @Param('id') id: string,
     @Body(new ZodValidationPipe(updateUserHasPermissionsSchema))
@@ -68,7 +73,7 @@ export class UserHasPermissionsController {
     };
   }
 
-  @SwaggerSafeDelete({ path: ':id' })
+  @Delete(':id')
   public async destroy(@Param('id') id: string) {
     const deleteds = await this.userHasPermissionsService.remove(+id);
     return {

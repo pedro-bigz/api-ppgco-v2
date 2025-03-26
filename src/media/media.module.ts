@@ -4,5 +4,6 @@ import { mediaProviders } from './media.providers';
 
 @Module({
   providers: [MediaService, ...mediaProviders],
+  exports: [MediaService],
 })
 export class MediaModule {}

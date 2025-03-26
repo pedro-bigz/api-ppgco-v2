@@ -1,8 +1,8 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { SYSTEM_APLIANCES_REPOSITORY } from './system-apliances.constants';
 import { SystemApliance } from './entities';
 import { CreateSystemApliancesDto, UpdateSystemApliancesDto } from './dto';
-import { CommonListing, CommonService, OrderDto, Query } from 'src/common';
+import { CommonListing, CommonService, OrderDto, Query } from 'src/core';
 import { Op } from 'sequelize';
 
 @Injectable()
@@ -30,6 +30,20 @@ export class SystemApliancesService extends CommonService<
 
   public findApliance(key: string) {
     return this.model.findOne({ where: { sa_key: key } });
+  }
+
+  public async findAplianceValue(key: string) {
+    const apliance = await this.model.findOne({ where: { sa_key: key } });
+
+    if (!apliance) {
+      throw new NotFoundException('Appliance not found');
+    }
+
+    return apliance.sa_value;
+  }
+
+  public set(sa_key: string, sa_value: string) {
+    return this.model.create({ sa_key, sa_value });
   }
 
   public create(createSystemApliancesDto: CreateSystemApliancesDto) {

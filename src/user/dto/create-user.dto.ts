@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { customCreateZodDto } from 'src/common';
+import { customCreateZodDto } from 'src/core';
 import { randomString } from 'src/utils';
 import { z } from 'zod';
 

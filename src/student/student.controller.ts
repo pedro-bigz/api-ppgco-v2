@@ -1,17 +1,16 @@
 import {
   Body,
+  Controller,
+  Delete,
+  Get,
   InternalServerErrorException,
   Param,
+  Patch,
+  Post,
   Query,
 } from '@nestjs/common';
-import { ZodValidationPipe, OrderDto, Filters } from 'src/common';
-import {
-  SwaggerSafeController,
-  SwaggerSafeDelete,
-  SwaggerSafeGet,
-  SwaggerSafePatch,
-  SwaggerSafePost,
-} from 'src/common';
+import { ZodValidationPipe, OrderDto, Filters } from 'src/core';
+
 import { Can } from 'src/permissions';
 import { StudentService } from './student.service';
 import {
@@ -23,14 +22,16 @@ import {
 } from './dto';
 import { Student } from './entities';
 import { Permissions } from './student.enum';
-import { DeleteSuccessResponse, UpdateSuccessResponse } from 'src/common/dto';
+import { DeleteSuccessResponse, UpdateSuccessResponse } from 'src/core/dto';
+import { ApiCreatedResponse, ApiOkResponse } from '@nestjs/swagger';
 
-@SwaggerSafeController('students')
+@Controller('students')
 export class StudentController {
   public constructor(private readonly studentService: StudentService) {}
 
-  @SwaggerSafeGet({ type: PaginatedStudentDto })
+  @Get()
   @Can(Permissions.List)
+  @ApiOkResponse({ type: PaginatedStudentDto })
   public findAll(
     @Query('page') page: string,
     @Query('perPage') perPage: string,
@@ -49,8 +50,9 @@ export class StudentController {
     );
   }
 
-  @SwaggerSafeGet({ path: '/count', type: Number })
+  @Get('/count')
   @Can(Permissions.List)
+  @ApiOkResponse({ type: Number })
   public count(
     @Query('search') search: string,
     @Query('searchIn') searchIn: string,
@@ -69,32 +71,30 @@ export class StudentController {
     );
   }
 
-  @SwaggerSafeGet({
-    path: '/count-with-late-milestones-by-course',
-    type: Number,
-  })
+  @Get('/count-with-late-milestones-by-course')
   @Can(Permissions.List)
+  @ApiOkResponse({ type: Number })
   public countWithLateMilestonesByCourse() {
     return this.studentService.countStudentsWithLateMilestonesByCourse();
   }
 
-  @SwaggerSafeGet({
-    path: '/get-with-late-milestones',
-    type: Number,
-  })
+  @Get('/get-with-late-milestones')
+  @ApiOkResponse({ type: Number })
   @Can(Permissions.List)
   public getWithLateMilestones() {
     return this.studentService.getStudentsWithLateMilestones();
   }
 
-  @SwaggerSafeGet({ path: ':id', type: Student })
+  @Get(':id')
   @Can(Permissions.Read)
+  @ApiOkResponse({ type: Student })
   public findOne(@Param('id') id: string) {
     return this.studentService.findWithProjectData(+id);
   }
 
-  @SwaggerSafePost({ type: Student })
+  @Post()
   @Can(Permissions.Create)
+  @ApiCreatedResponse({ type: Student })
   public create(
     @Body(new ZodValidationPipe(createStudentSchema))
     createStudentDto: CreateStudentDto,
@@ -102,8 +102,9 @@ export class StudentController {
     return this.studentService.create(createStudentDto);
   }
 
-  @SwaggerSafePatch({ path: ':id', type: UpdateSuccessResponse })
+  @Patch(':id')
   @Can(Permissions.Update)
+  @ApiOkResponse({ type: UpdateSuccessResponse })
   public async update(
     @Param('id') id: string,
     @Body(new ZodValidationPipe(updateStudentSchema))
@@ -136,14 +137,14 @@ export class StudentController {
     }
 
     return {
-      status: 'success',
       updateds: +affecteds,
       message: 'Student updated successfully',
     };
   }
 
-  @SwaggerSafeDelete({ path: '/:id', type: DeleteSuccessResponse })
+  @Delete(':id')
   @Can(Permissions.Delete)
+  @ApiOkResponse({ type: DeleteSuccessResponse })
   public destroy(@Param('id') id: string) {
     const deleteds = this.studentService.remove(+id);
     return {

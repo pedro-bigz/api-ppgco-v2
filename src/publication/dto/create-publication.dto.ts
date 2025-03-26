@@ -1,7 +1,7 @@
 import { z } from 'zod';
 import { ApiProperty } from '@nestjs/swagger';
 import { isValid, toIsoString } from 'src/utils';
-import { customCreateZodDto } from 'src/common';
+import { customCreateZodDto } from 'src/core';
 import { createPublicationCoauthorsSchema } from 'src/publication-coauthors';
 
 export const createPublicationSchema = z.object({

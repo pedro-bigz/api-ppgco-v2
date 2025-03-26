@@ -8,7 +8,7 @@ import { User, UserService } from 'src/user';
 import { Project, ProjectService } from 'src/project';
 import { Milestone, MilestoneService } from 'src/milestone';
 import { onlyNumbers, randomString } from 'src/utils';
-import { CommonListing, Filters, OrderDto } from 'src/common';
+import { CommonListing, Filters, OrderDto } from 'src/core';
 import { ProjectHasCoadvisorService } from 'src/project-has-coadvisor';
 import { Student, VStudent } from './entities';
 import {

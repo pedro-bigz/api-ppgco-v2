@@ -5,7 +5,7 @@ import {
   CreateProjectHasCoadvisorDto,
   UpdateProjectHasCoadvisorDto,
 } from './dto';
-import { CommonService, CreationAdditionalData } from 'src/common';
+import { CommonService, CreationAdditionalData } from 'src/core';
 import { Optional, Transaction } from 'sequelize';
 import { Op } from 'sequelize';
 

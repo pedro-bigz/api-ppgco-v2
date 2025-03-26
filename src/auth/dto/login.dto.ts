@@ -1,5 +1,4 @@
-import { ApiProperty } from '@nestjs/swagger';
-import { customCreateZodDto } from 'src/common';
+import { customCreateZodDto } from 'src/core';
 import { z } from 'zod';
 
 export const loginSchema = z.object({

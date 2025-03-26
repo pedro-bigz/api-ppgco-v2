@@ -12,7 +12,7 @@ import {
 import {
   OrderDto,
   ZodValidationPipe,
-  SwaggerSafeController,
+  Controller,
   SwaggerSafeGet,
   SwaggerSafePost,
   SwaggerSafePatch,
@@ -27,7 +27,7 @@ import {
 } from './dto';
 import { <%= modelClassName %> } from './entities';
 
-@SwaggerSafeController('<%= routePreffix %>')
+@Controller('<%= routePreffix %>')
 export class <%= controllerClassName %> {
   public constructor(private readonly <%= service.name %>: <%= service.className %>) {}
 

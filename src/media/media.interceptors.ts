@@ -6,7 +6,7 @@ import {
   UploadedCollectionsValidation,
 } from './collections';
 
-export const UseMediaValidatorInterceotor = (
+export const UseMediaValidatorInterceptor = (
   collections: MediaCollectionGroup,
 ) => {
   const uploadedCollections = UploadedCollectionsValidation.create(collections);

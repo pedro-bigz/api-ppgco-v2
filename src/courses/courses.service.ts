@@ -2,7 +2,7 @@ import { Inject, Injectable } from '@nestjs/common';
 import { COURSES_REPOSITORY } from './courses.constants';
 import { Course } from './entities';
 import { CreateCoursesDto, UpdateCoursesDto } from './dto';
-import { CommonListing, CommonService, OrderDto, Query } from 'src/common';
+import { CommonListing, CommonService, OrderDto, Query } from 'src/core';
 
 @Injectable()
 export class CoursesService extends CommonService<Course, typeof Course> {

@@ -1,7 +1,7 @@
 import { Inject, Injectable, NotImplementedException } from '@nestjs/common';
 import _capitalize from 'lodash/capitalize';
 import { Includeable, Op } from 'sequelize';
-import { CommonListing, CommonService, OrderDto, Query } from 'src/common';
+import { CommonListing, CommonService, OrderDto, Query } from 'src/core';
 import { ROLES_REPOSITORY } from './roles.constants';
 import { Role } from './entities';
 import { CreateRolesDto, UpdateRolesDto } from './dto';

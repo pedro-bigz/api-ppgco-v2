@@ -1,15 +1,20 @@
 import {
   BadRequestException,
   Body,
+  Controller,
+  Delete,
+  Get,
   NotFoundException,
   Param,
+  Patch,
+  Post,
   Query,
   UploadedFiles,
 } from '@nestjs/common';
-import { Filters, OrderDto, ZodValidationPipe } from 'src/common';
+import { Filters, OrderDto, ZodValidationPipe } from 'src/core';
 import {
   UploadedMediaValidationPipe,
-  UseMediaValidatorInterceotor,
+  UseMediaValidatorInterceptor,
 } from 'src/media';
 import { Can } from 'src/permissions';
 import { randomString } from 'src/utils';
@@ -19,22 +24,17 @@ import { createUserSchema, UpdateUserDto, PaginatedUserDto } from './dto';
 import { CurrentUser } from './user.decorator';
 import { COLLECTIONS } from './user.constants';
 import { Permissions } from './user.enum';
-import { DeleteSuccessResponse, UpdateSuccessResponse } from 'src/common/dto';
-import {
-  SwaggerSafeController,
-  SwaggerSafeDelete,
-  SwaggerSafeGet,
-  SwaggerSafePatch,
-  SwaggerSafePost,
-} from 'src/common';
+import { DeleteSuccessResponse, UpdateSuccessResponse } from 'src/core/dto';
+import { ApiCreatedResponse, ApiOkResponse } from '@nestjs/swagger';
 
-@SwaggerSafeController('users')
+@Controller('users')
 export class UserController {
   public constructor(private readonly userService: UserService) {}
 
-  @SwaggerSafePost({ path: 'upload-file', type: User })
-  @UseMediaValidatorInterceotor(COLLECTIONS)
+  @Post('upload-file')
   @Can(Permissions.Create)
+  @UseMediaValidatorInterceptor(COLLECTIONS)
+  @ApiCreatedResponse({ type: User })
   uploadFileAndPassValidation(
     @CurrentUser() user: User,
     @UploadedFiles(UploadedMediaValidationPipe(COLLECTIONS))
@@ -46,9 +46,10 @@ export class UserController {
     return user.saveFiles(files);
   }
 
-  @SwaggerSafePost({ type: User })
-  @UseMediaValidatorInterceotor(COLLECTIONS)
+  @Post()
   @Can(Permissions.Create)
+  @UseMediaValidatorInterceptor(COLLECTIONS)
+  @ApiCreatedResponse({ type: User })
   createUser(
     @Body(new ZodValidationPipe(createUserSchema)) createUserDto: any,
     @UploadedFiles(UploadedMediaValidationPipe(COLLECTIONS))
@@ -69,8 +70,9 @@ export class UserController {
     return this.userService.create(dto, { files, mailData });
   }
 
-  @SwaggerSafeGet({ type: PaginatedUserDto })
+  @Get()
   @Can(Permissions.List)
+  @ApiOkResponse({ type: PaginatedUserDto })
   public findAll(
     @Query('page') page: string,
     @Query('perPage') perPage: string,
@@ -90,8 +92,9 @@ export class UserController {
     );
   }
 
-  @SwaggerSafeGet({ path: ':id', type: User })
+  @Get(':id')
   @Can(Permissions.Read)
+  @ApiOkResponse({ type: User })
   public async findOne(@Param('id') id: string[]) {
     const user = await this.userService.findOneWithoutSensiteData(+id);
 
@@ -104,8 +107,9 @@ export class UserController {
     return { ...user, avatar };
   }
 
-  @SwaggerSafePatch({ path: ':id', type: UpdateSuccessResponse })
+  @Patch(':id')
   @Can(Permissions.Update)
+  @ApiOkResponse({ type: UpdateSuccessResponse })
   public update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
     const updateds = this.userService.update(+id, updateUserDto);
 
@@ -116,8 +120,9 @@ export class UserController {
     };
   }
 
-  @SwaggerSafeDelete({ path: ':id', type: DeleteSuccessResponse })
+  @Delete(':id')
   @Can(Permissions.Delete)
+  @ApiOkResponse({ type: DeleteSuccessResponse })
   public remove(@Param('id') id: string) {
     const deleteds = this.userService.remove(+id);
     return {

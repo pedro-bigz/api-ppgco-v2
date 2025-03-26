@@ -5,18 +5,16 @@ export const getCompiler = (props: object) => {
     .setContent(
       `
 import { z } from 'zod';
-import { ApiProperty } from '@nestjs/swagger';
+import { customCreateZodDto } from 'src/common';
 <%= setImportString(imports) %>
 
 export const <%= schemaName %> = z.object({
 <% _.each(attributes, function(attribute, index) {  %>  <%= attribute.name %>: <%= attribute.validation %>,
 <% }) %>});
 
-export class <%= dtoName %> {
-<% _.each(attributes, function(attribute, index) { %>
-  @ApiProperty(<% if(!attribute.isNullable) { %>{ required: true }<% } %>)
-  <%= attribute.name %>: <%= attribute.type %>;<% if(index + 1 < attributes.length) { %>\n\n  <% } %>
-<% }) %>}
+export class <%= dtoName %>  extends customCreateZodDto(
+  <%= schemaName %>,
+) {}
 `,
     )
     .setProps(props)

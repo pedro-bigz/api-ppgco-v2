@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { customCreateZodDto } from 'src/common';
+import { customCreateZodDto } from 'src/core';
 
 export const createNotificationsSchema = z.object({
   body: z.string().max(65535).optional(),

@@ -11,7 +11,7 @@ import {
   Filters,
   OrderDto,
   Query,
-} from 'src/common';
+} from 'src/core';
 import { User } from 'src/user';
 import { StudentService } from 'src/student';
 import { PublicationCoauthorsService } from 'src/publication-coauthors';

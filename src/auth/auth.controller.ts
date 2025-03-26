@@ -1,18 +1,17 @@
 import {
+  Get,
+  Head,
   Body,
   Post,
   HttpCode,
-  HttpStatus,
   UsePipes,
-  Get,
-  Request,
-  Head,
+  Controller,
+  HttpStatus,
   UnauthorizedException,
 } from '@nestjs/common';
 import { ApiOkResponse } from '@nestjs/swagger';
 import _map from 'lodash/map';
-import { ZodValidationPipe } from 'src/common';
-import { SwaggerSafeController } from 'src/common';
+import { BearerToken, Public, ZodValidationPipe } from 'src/core';
 import { CurrentUser, User } from 'src/user';
 import { Permission, PermissionsService } from 'src/permissions';
 import { AuthService } from './auth.service';
@@ -24,10 +23,8 @@ import {
   refreshTokenSchema,
   RefreshTokenDto,
 } from './dto';
-import { BearerToken, Public } from './auth.decorator';
-import dayjs from 'dayjs';
 
-@SwaggerSafeController('auth')
+@Controller('auth')
 export class AuthController {
   constructor(
     private readonly authService: AuthService,
@@ -52,7 +49,6 @@ export class AuthController {
     type: User,
   })
   public async getProfile(@CurrentUser() { dataValues: user }: User) {
-    console.log({ roles: user.roles });
     const permissions = await this.permissionService
       .getUserPermissions(user)
       .then((permissions: Permission[]) => {
@@ -60,12 +56,6 @@ export class AuthController {
       });
 
     const { roles, ...userData } = user;
-
-    console.log({
-      ...userData,
-      permissions,
-      roles: _map(roles, 'name'),
-    });
 
     return {
       ...userData,

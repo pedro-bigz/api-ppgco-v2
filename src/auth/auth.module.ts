@@ -9,5 +9,6 @@ import { PermissionsModule } from 'src/permissions';
   imports: [UserModule, PermissionsModule],
   controllers: [AuthController],
   providers: [AuthService, ...authProviders],
+  exports: [AuthService],
 })
 export class AuthModule {}

@@ -1,5 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { CommonListing, Filters, OrderDto } from 'src/common';
+import { CommonListing, Filters, OrderDto } from 'src/core';
 import {
   SUBJECTS_REPOSITORY,
   V_SUBJECTS_REPOSITORY,

@@ -1,3 +1,4 @@
+import { Request } from 'express';
 import {
   CanActivate,
   ExecutionContext,
@@ -8,10 +9,9 @@ import {
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { JwtService } from '@nestjs/jwt';
-import { Request } from 'express';
-import { IS_PUBLIC_KEY } from './auth.decorator';
-import { UserService } from 'src/user';
 import { ConfigService } from '@nestjs/config';
+import { UserService } from 'src/user';
+import { IS_PUBLIC_KEY } from 'src/core';
 
 export type UserPayload = {
   _id: number;

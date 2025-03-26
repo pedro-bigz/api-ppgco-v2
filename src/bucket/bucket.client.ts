@@ -8,7 +8,7 @@ import {
 } from 'src/bucket';
 import { BucketFileApi, BucketFileApiInterface } from 'src/bucket/bucket-files';
 import { BucketClientConfig } from './bucket.types';
-import { MagicMethods } from 'src/common';
+import { MagicMethods } from 'src/core';
 
 interface BucketClientInterface {
   bucket: BucketApi;

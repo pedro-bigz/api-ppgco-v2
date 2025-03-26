@@ -1,7 +1,7 @@
 import { Inject, Injectable } from '@nestjs/common';
 import _chunk from 'lodash/chunk';
 
-import { CommonListing, CommonService, OrderDto, Query } from 'src/common';
+import { CommonListing, CommonService, OrderDto, Query } from 'src/core';
 import { Notification } from './entities';
 import { CreateNotificationsDto, UpdateNotificationsDto } from './dto';
 import { NOTIFICATIONS_REPOSITORY } from './notifications.constants';
@@ -15,6 +15,13 @@ export class NotificationsService extends CommonService<
   Notification,
   typeof Notification
 > {
+  private readonly notifiers: {
+    all_advisors?: NotifyAllAdvisors;
+    all_students?: NotifyAllStudents;
+    some_advisors?: NotifySomeAdvisors;
+    some_students?: NotifySomeStudents;
+  };
+
   public constructor(
     @Inject(NOTIFICATIONS_REPOSITORY) model: typeof Notification,
     private readonly notifyAllAdvisors: NotifyAllAdvisors,
@@ -23,6 +30,13 @@ export class NotificationsService extends CommonService<
     private readonly notifySomeStudents: NotifySomeStudents,
   ) {
     super(model);
+
+    this.notifiers = {
+      all_advisors: this.notifyAllAdvisors,
+      all_students: this.notifyAllStudents,
+      some_advisors: this.notifySomeAdvisors,
+      some_students: this.notifySomeStudents,
+    };
   }
 
   public findOneWithUsers(id: number) {
@@ -37,19 +51,8 @@ export class NotificationsService extends CommonService<
       ...createNotificationsDto,
     });
 
-    const notifiers = {
-      all_advisors: this.notifyAllAdvisors,
-      all_students: this.notifyAllStudents,
-      some_advisors: this.notifySomeAdvisors,
-      some_students: this.notifySomeStudents,
-    };
-
-    console.log({ notifieds });
-
-    const notifier = notifiers[notifieds.mode];
+    const notifier = this.notifiers[notifieds.mode];
     const values = notifieds.values ?? [];
-
-    console.log({ notifier, notifieds_values: notifieds.values, values });
 
     await notifier.notify(notification.dataValues.id, ...values);
   }

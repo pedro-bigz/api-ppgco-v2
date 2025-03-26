@@ -153,7 +153,6 @@ export class CrudGeneratorService {
   }
 
   private generateAll() {
-    console.log('generate all');
     this.makeQueue([
       this.modelFolderGenerator,
       this.dtoFolderGenerator,
@@ -161,15 +160,15 @@ export class CrudGeneratorService {
       this.dtoIndexGenerator,
       this.moduleGenerator,
       this.modelGenerator,
+      this.dtoCreateGenerator,
+      this.dtoUpdateGenerator,
+      this.dtoPaginatedGenerator,
+      this.providersGenerator,
+      this.constantsGenerator,
       this.controllerGenerator,
       this.controllerSpecGenerator,
       this.serviceGenerator,
       this.serviceSpecGenerator,
-      this.constantsGenerator,
-      this.providersGenerator,
-      this.dtoCreateGenerator,
-      this.dtoUpdateGenerator,
-      this.dtoPaginatedGenerator,
     ]);
   }
 

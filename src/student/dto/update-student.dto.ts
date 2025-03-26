@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import { isValid, toIsoString } from 'src/utils';
-import { customCreateZodDto } from 'src/common';
+import { customCreateZodDto } from 'src/core';
 
 export const updateStudentSchema = z.object({
   registration: z.string().max(50),

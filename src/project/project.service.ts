@@ -2,7 +2,7 @@ import { Inject, Injectable } from '@nestjs/common';
 import { PROJECT_REPOSITORY } from './project.constants';
 import { Project } from './entities';
 import { CreateProjectDto, UpdateProjectDto } from './dto';
-import { CommonService, CreationAdditionalData } from 'src/common';
+import { CommonService, CreationAdditionalData } from 'src/core';
 
 @Injectable()
 export class ProjectService extends CommonService<Project, typeof Project> {

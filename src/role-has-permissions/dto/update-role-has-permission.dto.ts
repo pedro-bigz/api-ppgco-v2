@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { customCreateZodDto } from 'src/common';
+import { customCreateZodDto } from 'src/core';
 
 export const updateRoleHasPermissionsSchema = z.object({
   permission_id: z.number(),

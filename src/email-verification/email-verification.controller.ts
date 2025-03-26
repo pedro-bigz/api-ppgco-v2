@@ -1,20 +1,18 @@
-import { Param } from '@nestjs/common';
-import { SwaggerSafeController, SwaggerSafeGet } from 'src/common';
-import { Public } from 'src/auth';
+import { Controller, Get, Param } from '@nestjs/common';
+import { Public } from 'src/core';
 import { EmailVerificationService } from './email-verification.service';
 import { EmailVerificationResponseDto } from './dto';
+import { ApiOkResponse } from '@nestjs/swagger';
 
-@SwaggerSafeController('activations')
+@Controller('activations')
 export class EmailVerificationController {
   public constructor(
     private readonly emailVerificationService: EmailVerificationService,
   ) {}
 
   @Public()
-  @SwaggerSafeGet({
-    path: ':token',
-    type: EmailVerificationResponseDto,
-  })
+  @Get(':token')
+  @ApiOkResponse({ type: EmailVerificationResponseDto })
   public async emailVerification(@Param('token') token: string) {
     return this.emailVerificationService.activateAccount(token);
   }

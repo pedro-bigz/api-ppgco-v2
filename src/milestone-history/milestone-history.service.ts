@@ -2,7 +2,7 @@ import { Inject, Injectable } from '@nestjs/common';
 import { MILESTONE_HISTORY_REPOSITORY } from './milestone-history.constants';
 import { MilestoneHistory } from './entities';
 import { CreateMilestoneHistoryDto, UpdateMilestoneHistoryDto } from './dto';
-import { CommonService } from 'src/common';
+import { CommonService } from 'src/core';
 
 @Injectable()
 export class MilestoneHistoryService extends CommonService<

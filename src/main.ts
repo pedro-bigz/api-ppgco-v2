@@ -2,12 +2,12 @@ import { Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import { HttpAdapterHost, NestFactory, Reflector } from '@nestjs/core';
-import { AllExceptionsFilter, configHelper } from 'src/common';
+import { AllExceptionsFilter, configHelper } from 'src/core';
 import { PermissionGuard, PermissionsService } from 'src/permissions';
 import { RoleHasPermissionsService } from 'src/role-has-permissions';
 import { AppModule } from 'src/app.module';
 import { AppSwagger } from 'src/app.swagger';
-import { AppConfig } from 'src/app.config';
+import { AppConfig } from 'src/app.configure';
 import { AppLogger } from 'src/app.logger';
 
 async function bootstrap() {

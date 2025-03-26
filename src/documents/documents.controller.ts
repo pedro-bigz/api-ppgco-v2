@@ -1,20 +1,24 @@
-import { Body, Query, Param } from '@nestjs/common';
-import { ZodValidationPipe, OrderDto } from 'src/common';
 import {
-  SwaggerSafeController,
-  SwaggerSafeDelete,
-  SwaggerSafeGet,
-  SwaggerSafePost,
-} from 'src/common';
+  Body,
+  Query,
+  Param,
+  Controller,
+  Get,
+  Post,
+  Delete,
+} from '@nestjs/common';
+import { ZodValidationPipe, OrderDto } from 'src/core';
 import { DocumentsService } from './documents.service';
 import { CreateDocumentsDto, createDocumentsSchema } from './dto';
 import { Document } from './entities';
+import { ApiCreatedResponse, ApiOkResponse } from '@nestjs/swagger';
 
-@SwaggerSafeController('documents')
+@Controller('documents')
 export class DocumentsController {
   public constructor(private readonly documentsService: DocumentsService) {}
 
-  @SwaggerSafeGet({ type: Document })
+  @Get()
+  @ApiOkResponse({ type: Document })
   public findAll(
     @Query('page') page: string,
     @Query('perPage') perPage: string,
@@ -25,7 +29,8 @@ export class DocumentsController {
     return this.documentsService.find(+page, +perPage, search, searchIn, order);
   }
 
-  @SwaggerSafePost({ type: Document })
+  @Post()
+  @ApiCreatedResponse({ type: Document })
   public create(
     @Body(new ZodValidationPipe(createDocumentsSchema))
     createDocumentsDto: CreateDocumentsDto,
@@ -33,7 +38,7 @@ export class DocumentsController {
     return this.documentsService.create(createDocumentsDto);
   }
 
-  @SwaggerSafeDelete({ path: ':name' })
+  @Delete(':name')
   public async destroy(@Param('name') name: string) {
     const deleteds = await this.documentsService.remove(name);
     return {

@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { storageApi } from 'src/config';
+import { storageApi } from 'src/core';
 import _trim from 'lodash/trim';
 
 @Injectable()

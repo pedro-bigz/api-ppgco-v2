@@ -9,6 +9,7 @@ import { MailerModule } from 'src/mailer/mailer.module';
 import { ActivationsModule } from 'src/activations/activations.module';
 import { UserHasRolesModule } from 'src/user-has-roles';
 import { RolesModule } from 'src/roles';
+import { UsersPasswordResetModule } from 'src/users-password-reset';
 
 @Module({
   imports: [
@@ -18,6 +19,7 @@ import { RolesModule } from 'src/roles';
     MailerModule,
     ActivationsModule,
     UserHasRolesModule,
+    UsersPasswordResetModule
   ],
   controllers: [UserController],
   providers: [UserService, ...userProviders],

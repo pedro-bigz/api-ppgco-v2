@@ -1,12 +1,20 @@
-import { Body, Query, Param } from '@nestjs/common';
-import { ZodValidationPipe, OrderDto, Filters } from 'src/common';
 import {
-  SwaggerSafeController,
-  SwaggerSafeDelete,
-  SwaggerSafeGet,
-  SwaggerSafePatch,
-  SwaggerSafePost,
-} from 'src/common';
+  Body,
+  Query,
+  Param,
+  Controller,
+  Get,
+  Delete,
+  Patch,
+  Post,
+} from '@nestjs/common';
+import {
+  ZodValidationPipe,
+  OrderDto,
+  Filters,
+  UpdateSuccessResponse,
+  DeleteSuccessResponse,
+} from 'src/core';
 import { AdvisorService } from './advisor.service';
 import {
   CreateAdvisorDto,
@@ -18,13 +26,15 @@ import {
 import { Can } from 'src/permissions';
 import { Permissions } from './advisor.enum';
 import { Advisor } from './entities';
+import { ApiCreatedResponse, ApiOkResponse } from '@nestjs/swagger';
 
-@SwaggerSafeController('advisors')
+@Controller('advisors')
 export class AdvisorController {
   public constructor(private readonly advisorService: AdvisorService) {}
 
-  @SwaggerSafeGet({ type: PaginatedAdvisorDto })
+  @Get()
   @Can(Permissions.List)
+  @ApiOkResponse({ type: PaginatedAdvisorDto })
   public async findAll(
     @Query('page') page: string,
     @Query('perPage') perPage: string,
@@ -43,8 +53,9 @@ export class AdvisorController {
     );
   }
 
-  @SwaggerSafeGet({ path: '/count', type: Number })
+  @Get('/count')
   @Can(Permissions.List)
+  @ApiOkResponse({ type: Number })
   public count(
     @Query('search') search: string,
     @Query('searchIn') searchIn: string,
@@ -63,19 +74,22 @@ export class AdvisorController {
     );
   }
 
-  @SwaggerSafeGet({ path: '/count-students-by-advisor', type: Number })
+  @Get('/count-students-by-advisor')
   @Can(Permissions.List)
+  @ApiOkResponse({ type: Number })
   public countStudentsByAdvisor() {
     return this.advisorService.countStudentsByAdvisor();
   }
 
-  @SwaggerSafeGet({ path: ':id', type: Advisor })
+  @Get(':id')
   @Can(Permissions.Read)
+  @ApiOkResponse({ type: Advisor })
   public findOne(@Param('id') id: string) {
     return this.advisorService.findOne(+id);
   }
 
-  @SwaggerSafePost({ type: Advisor })
+  @Post()
+  @ApiCreatedResponse({ type: Advisor })
   @Can(Permissions.Create)
   public create(
     @Body(new ZodValidationPipe(createAdvisorSchema))
@@ -84,8 +98,9 @@ export class AdvisorController {
     return this.advisorService.create(createAdvisorDto);
   }
 
-  @SwaggerSafePatch({ path: ':id' })
+  @Patch(':id')
   @Can(Permissions.Update)
+  @ApiOkResponse({ type: UpdateSuccessResponse })
   public async update(
     @Param('id') id: string,
     @Body(new ZodValidationPipe(updateAdvisorSchema))
@@ -98,9 +113,14 @@ export class AdvisorController {
     };
   }
 
-  @SwaggerSafeDelete({ path: ':id' })
+  @Delete(':id')
   @Can(Permissions.Delete)
-  public destroy(@Param('id') id: string) {
-    return this.advisorService.remove(+id);
+  @ApiOkResponse({ type: DeleteSuccessResponse })
+  public async destroy(@Param('id') id: string) {
+    const deleteds = await this.advisorService.remove(+id);
+    return {
+      deleteds,
+      message: 'Item deletado com sucesso',
+    };
   }
 }

@@ -1,4 +1,4 @@
-import { EnvAccessor, EnvType } from 'src/common';
+import { EnvAccessor, EnvType } from 'src/core';
 
 export type DBEnvType = EnvType;
 

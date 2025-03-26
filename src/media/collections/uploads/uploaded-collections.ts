@@ -91,8 +91,6 @@ export class UploadedCollectionsValidation {
     return (validation: MediaCollectionMetadata, name: string) => {
       const groupFiles = files?.[name] ?? [];
 
-      console.log({ files, name });
-
       if (validation.required && groupFiles.length === 0) {
         throw new BadRequestException(`The files ${name} are required`);
       }

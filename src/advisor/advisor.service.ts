@@ -17,7 +17,7 @@ import {
   Filters,
   OrderDto,
   Query,
-} from 'src/common';
+} from 'src/core';
 import { User, UserService } from 'src/user';
 import { onlyNumbers, randomString } from 'src/utils';
 import { ResearchLine } from 'src/research-line';

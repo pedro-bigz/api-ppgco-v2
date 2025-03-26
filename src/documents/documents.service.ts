@@ -2,7 +2,7 @@ import { Inject, Injectable } from '@nestjs/common';
 import { DOCUMENTS_REPOSITORY } from './documents.constants';
 import { Document } from './entities';
 import { CreateDocumentsDto, UpdateDocumentsDto } from './dto';
-import { CommonListing, CommonService, OrderDto, Query } from 'src/common';
+import { CommonListing, CommonService, OrderDto, Query } from 'src/core';
 
 @Injectable()
 export class DocumentsService extends CommonService<

@@ -3,7 +3,7 @@ import { Transaction } from 'sequelize';
 import _differenceBy from 'lodash/differenceBy';
 import _intersectionBy from 'lodash/intersectionBy';
 
-import { CommonListing, CommonService, OrderDto, Query } from 'src/common';
+import { CommonListing, CommonService, OrderDto, Query } from 'src/core';
 import { MilestoneDocumentService } from 'src/milestone-document';
 import {
   CreateMilestoneHistoryDto,
@@ -187,7 +187,7 @@ export class MilestoneService extends CommonService<
       );
     }
 
-    return updateds;
+    return Promise.resolve([await updateds]);
   }
 
   private async persistHistory(id: number, register: Milestone) {

@@ -1,12 +1,21 @@
-import { Body, Query, Param, BadRequestException } from '@nestjs/common';
-import { ZodValidationPipe, OrderDto, Filters } from 'src/common';
 import {
-  SwaggerSafeController,
-  SwaggerSafeDelete,
-  SwaggerSafeGet,
-  SwaggerSafePatch,
-  SwaggerSafePost,
-} from 'src/common';
+  Body,
+  Query,
+  Param,
+  BadRequestException,
+  Controller,
+  Get,
+  Post,
+  Patch,
+  Delete,
+} from '@nestjs/common';
+import {
+  ZodValidationPipe,
+  OrderDto,
+  Filters,
+  DeleteSuccessResponse,
+  UpdateSuccessResponse,
+} from 'src/core';
 import {
   CreatePublicationDto,
   PaginatedPublicationDto,
@@ -20,12 +29,14 @@ import { Permissions } from './publication.enum';
 import { Publication } from './entities';
 import { CurrentUser, User } from 'src/user';
 import { ROLES } from 'src/roles';
+import { ApiCreatedResponse, ApiOkResponse } from '@nestjs/swagger';
 
-@SwaggerSafeController('publications')
+@Controller('publications')
 export class PublicationController {
   public constructor(private readonly publicationService: PublicationService) {}
 
-  @SwaggerSafeGet({ type: PaginatedPublicationDto })
+  @Get()
+  @ApiOkResponse({ type: PaginatedPublicationDto })
   @Can(Permissions.List)
   public findAll(
     @CurrentUser() user: User,
@@ -47,14 +58,16 @@ export class PublicationController {
     );
   }
 
-  @SwaggerSafeGet({ path: ':id', type: Publication })
+  @Get(':id')
   @Can(Permissions.Read)
+  @ApiOkResponse({ type: Publication })
   public findOne(@Param('id') id: string) {
     return this.publicationService.findOne(+id);
   }
 
-  @SwaggerSafePost({ type: Publication })
+  @Post()
   @Can(Permissions.Create)
+  @ApiCreatedResponse({ type: Publication })
   public async create(
     @CurrentUser() user: User,
     @Body(new ZodValidationPipe(createPublicationSchema))
@@ -77,19 +90,33 @@ export class PublicationController {
     });
   }
 
-  @SwaggerSafePatch({ path: ':id' })
+  @Patch(':id')
   @Can(Permissions.Update)
-  public update(
+  @ApiOkResponse({ type: UpdateSuccessResponse })
+  public async update(
     @Param('id') id: string,
     @Body(new ZodValidationPipe(updatePublicationSchema))
     updatePublicationDto: UpdatePublicationDto,
   ) {
-    return this.publicationService.update(+id, updatePublicationDto);
+    const [updateds] = await this.publicationService.update(
+      +id,
+      updatePublicationDto,
+    );
+    return {
+      updateds,
+      message: 'Item atualizado com sucesso',
+    };
   }
 
-  @SwaggerSafeDelete({ path: ':id' })
+  @Delete(':id')
   @Can(Permissions.Delete)
-  public destroy(@Param('id') id: string) {
-    return this.publicationService.remove(+id);
+  @ApiOkResponse({ type: DeleteSuccessResponse })
+  public async destroy(@Param('id') id: string) {
+    const deleteds = await this.publicationService.remove(+id);
+    return {
+      status: 'success',
+      message: 'Student deleted successfully',
+      deleteds,
+    };
   }
 }

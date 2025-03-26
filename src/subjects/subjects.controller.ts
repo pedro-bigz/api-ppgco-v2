@@ -1,5 +1,20 @@
-import { Body, Query, Param } from '@nestjs/common';
-import { ZodValidationPipe, OrderDto, Filters } from 'src/common';
+import {
+  Body,
+  Query,
+  Param,
+  Controller,
+  Get,
+  Post,
+  Patch,
+  Delete,
+} from '@nestjs/common';
+import {
+  ZodValidationPipe,
+  OrderDto,
+  Filters,
+  DeleteSuccessResponse,
+  UpdateSuccessResponse,
+} from 'src/core';
 import { SubjectsService } from './subjects.service';
 import {
   CreateSubjectsByListDto,
@@ -13,19 +28,14 @@ import { Subject } from './entities';
 import { PaginatedSubjectDto } from './dto/paginated-subject.dto';
 import { Can } from 'src/permissions';
 import { Permissions } from './subjects.enum';
-import {
-  SwaggerSafeController,
-  SwaggerSafeDelete,
-  SwaggerSafeGet,
-  SwaggerSafePatch,
-  SwaggerSafePost,
-} from 'src/common';
+import { ApiCreatedResponse, ApiOkResponse } from '@nestjs/swagger';
 
-@SwaggerSafeController('subjects')
+@Controller('subjects')
 export class SubjectsController {
   public constructor(private readonly subjectsService: SubjectsService) {}
 
-  @SwaggerSafeGet({ type: PaginatedSubjectDto })
+  @Get()
+  @ApiOkResponse({ type: PaginatedSubjectDto })
   @Can(Permissions.List)
   public findAll(
     @Query('page') page: string,
@@ -55,13 +65,15 @@ export class SubjectsController {
   //   return this.subjectsService.count(search, searchIn);
   // }
 
-  @SwaggerSafeGet({ path: ':id', type: Subject })
+  @Get(':id')
+  @ApiOkResponse({ type: Subject })
   @Can(Permissions.Read)
   public findOne(@Param('id') id: string) {
     return this.subjectsService.findOne(+id);
   }
 
-  @SwaggerSafePost({ type: Subject })
+  @Post()
+  @ApiCreatedResponse({ type: Subject })
   @Can(Permissions.Create)
   public create(
     @Body(new ZodValidationPipe(createSubjectsSchema))
@@ -70,7 +82,8 @@ export class SubjectsController {
     return this.subjectsService.create(createSubjectsDto);
   }
 
-  @SwaggerSafePost({ path: 'by-list', type: Subject })
+  @Post('by-list')
+  @ApiCreatedResponse({ type: Subject })
   @Can(Permissions.Create)
   public createByList(
     @Body(new ZodValidationPipe(createSubjectsSchemaByList))
@@ -83,8 +96,9 @@ export class SubjectsController {
     );
   }
 
-  @SwaggerSafePatch({ path: ':id' })
+  @Patch(':id')
   @Can(Permissions.Update)
+  @ApiOkResponse({ type: UpdateSuccessResponse })
   public async update(
     @Param('id') id: string,
     @Body(new ZodValidationPipe(updateSubjectsSchema))
@@ -100,8 +114,9 @@ export class SubjectsController {
     };
   }
 
-  @SwaggerSafeDelete({ path: ':id' })
+  @Delete(':id')
   @Can(Permissions.Delete)
+  @ApiOkResponse({ type: DeleteSuccessResponse })
   public async destroy(@Param('id') id: string) {
     const deleteds = await this.subjectsService.remove(+id);
     return {

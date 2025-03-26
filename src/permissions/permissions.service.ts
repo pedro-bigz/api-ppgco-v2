@@ -1,5 +1,5 @@
 import { Inject, Injectable, NotImplementedException } from '@nestjs/common';
-import { CommonService } from 'src/common';
+import { CommonService } from 'src/core';
 import { User } from 'src/user';
 import { RoleHasPermission } from 'src/role-has-permissions';
 import { Op } from 'sequelize';

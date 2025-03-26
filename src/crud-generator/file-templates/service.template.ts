@@ -14,11 +14,11 @@ import { CommonListing, OrderDto, Query } from 'src/common';
 export class <%= serviceClassName %> {
   public constructor(
     @Inject(<%= model.repository %>)
-    private readonly <%= model.name %>: typeof <%= model.type %>,
+    private readonly model: typeof <%= model.type %>,
   ) {}
 
   public findAll() {
-    return this.<%= model.name %>.findAll();
+    return this.model.findAll();
   }
 
   public async find(
@@ -28,7 +28,7 @@ export class <%= serviceClassName %> {
     searchIn: string = '<%= primaryKey.name %>',
     order: OrderDto[],
   ) {
-    return CommonListing.create<typeof <%= model.type %>, <%= model.type %>>(this.<%= model.name %>)
+    return CommonListing.create<<%= model.type %>, typeof <%= model.type %>>(this.model)
       ?.attachPagination(page, perPage)
       ?.attachMultipleOrder(order || [['<%= primaryKey.name %>', 'DESC']])
       ?.attachSearch(search, searchIn)
@@ -37,23 +37,23 @@ export class <%= serviceClassName %> {
           ...query,
         };
       })
-      ?.get<<%= model.type %>>();
+      ?.get();
   }
 
   public findOne(<%= primaryKey.name %>: <%= primaryKey.type %>) {
-    return this.<%= model.name %>.findOne({ where: { <%= primaryKey.name %> } });
+    return this.model.findOne({ where: { <%= primaryKey.name %> } });
   }
 
   public create(<%= dto.create.name %>: <%= dto.create.type %>) {
-    return this.<%= model.name %>.create({ ...<%= dto.create.name %> });
+    return this.model.create({ ...<%= dto.create.name %> });
   }
 
   public update(<%= primaryKey.name %>: <%= primaryKey.type %>, <%= dto.update.name %>: <%= dto.update.type %>) {
-    return this.<%= model.name %>.update(<%= dto.update.name %>, { where: { <%= primaryKey.name %> } });
+    return this.model.update(<%= dto.update.name %>, { where: { <%= primaryKey.name %> } });
   }
 
   public remove(<%= primaryKey.name %>: <%= primaryKey.type %>) {
-    return this.<%= model.name %>.destroy({ where: { <%= primaryKey.name %> } });
+    return this.model.destroy({ where: { <%= primaryKey.name %> } });
   }
 }`,
     )

@@ -1,12 +1,19 @@
-import { Body, Param, Query } from '@nestjs/common';
-import { ZodValidationPipe, OrderDto } from 'src/common';
 import {
-  SwaggerSafeController,
-  SwaggerSafeDelete,
-  SwaggerSafeGet,
-  SwaggerSafePatch,
-  SwaggerSafePost,
-} from 'src/common';
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Patch,
+  Post,
+  Query,
+} from '@nestjs/common';
+import {
+  ZodValidationPipe,
+  OrderDto,
+  DeleteSuccessResponse,
+  UpdateSuccessResponse,
+} from 'src/core';
 import { MilestoneService } from './milestone.service';
 import {
   CreateMilestoneDto,
@@ -20,13 +27,15 @@ import { Can } from 'src/permissions';
 import { Permissions } from './milestone.enum';
 import { Milestone } from './entities';
 import { createMilestoneIntoProjectSchema } from './dto/create-milestone-into-project.dto';
+import { ApiCreatedResponse, ApiOkResponse } from '@nestjs/swagger';
 
-@SwaggerSafeController('milestones')
+@Controller('milestones')
 export class MilestoneController {
   public constructor(private readonly milestoneService: MilestoneService) {}
 
-  @SwaggerSafeGet({ type: PaginatedMilestoneDto })
+  @Get()
   @Can(Permissions.List)
+  @ApiOkResponse({ type: PaginatedMilestoneDto })
   public async findAll(
     @Query('page') page: string,
     @Query('perPage') perPage: string,
@@ -46,14 +55,16 @@ export class MilestoneController {
     return this.milestoneService.find(+page, +perPage, search, searchIn, order);
   }
 
-  @SwaggerSafeGet({ path: ':id', type: Milestone })
+  @Get(':id')
   @Can(Permissions.Read)
+  @ApiOkResponse({ type: Milestone })
   public findOne(@Param('id') id: string) {
     return this.milestoneService.findOne(+id);
   }
 
-  @SwaggerSafePost({ type: Milestone })
+  @Post()
   @Can(Permissions.Create)
+  @ApiCreatedResponse({ type: Milestone })
   public create(
     @Body(new ZodValidationPipe(createMilestoneSchema))
     { project_ids, ...createMilestoneDto }: CreateMilestoneDto,
@@ -64,8 +75,9 @@ export class MilestoneController {
     );
   }
 
-  @SwaggerSafePost({ path: ':projectId/new', type: Milestone })
+  @Post(':projectId/new')
   @Can(Permissions.Create)
+  @ApiCreatedResponse({ type: Milestone })
   public createIntoProject(
     @Param('projectId') projectId: string,
     @Body(new ZodValidationPipe(createMilestoneIntoProjectSchema))
@@ -74,19 +86,32 @@ export class MilestoneController {
     return this.milestoneService.create(+projectId, createMilestoneDto);
   }
 
-  @SwaggerSafePatch({ path: ':id' })
+  @Patch(':id')
   @Can(Permissions.Update)
-  public update(
+  @ApiOkResponse({ type: UpdateSuccessResponse })
+  public async update(
     @Param('id') id: string,
     @Body(new ZodValidationPipe(updateMilestoneSchema))
     updateMilestoneDto: UpdateMilestoneDto,
   ) {
-    return this.milestoneService.update(+id, updateMilestoneDto);
+    const [updateds] = await this.milestoneService.update(
+      +id,
+      updateMilestoneDto,
+    );
+    return {
+      updateds,
+      message: 'Item atualizado com sucesso',
+    };
   }
 
-  @SwaggerSafeDelete({ path: ':id' })
+  @Delete(':id')
   @Can(Permissions.Delete)
-  public destroy(@Param('id') id: string) {
-    return this.milestoneService.remove(+id);
+  @ApiOkResponse({ type: DeleteSuccessResponse })
+  public async destroy(@Param('id') id: string) {
+    const deleteds = await this.milestoneService.remove(+id);
+    return {
+      deleteds,
+      message: 'Item deletado com sucesso',
+    };
   }
 }

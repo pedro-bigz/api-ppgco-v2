@@ -1,10 +1,5 @@
-import { Body, Query, Param } from '@nestjs/common';
-import { ZodValidationPipe, OrderDto } from 'src/common';
-import {
-  SwaggerSafeController,
-  SwaggerSafeGet,
-  SwaggerSafePost,
-} from 'src/common';
+import { Body, Query, Param, Controller, Get, Post } from '@nestjs/common';
+import { ZodValidationPipe, OrderDto } from 'src/core';
 import { DisconnectedStudentService } from './disconnected-student.service';
 import {
   CreateDisconnectedStudentDto,
@@ -14,15 +9,17 @@ import {
 import { Can } from 'src/permissions';
 import { Permissions } from './disconnected-student.enum';
 import { DisconnectedStudent } from './entities';
+import { ApiCreatedResponse, ApiOkResponse } from '@nestjs/swagger';
 
-@SwaggerSafeController('disconnect-student')
+@Controller('disconnect-student')
 export class DisconnectedStudentController {
   public constructor(
     private readonly disconnectedStudentService: DisconnectedStudentService,
   ) {}
 
-  @SwaggerSafeGet({ type: PaginatedDisconnectedStudentDto })
+  @Get()
   @Can(Permissions.List)
+  @ApiOkResponse({ type: PaginatedDisconnectedStudentDto })
   public findAll(
     @Query('page') page: string,
     @Query('perPage') perPage: string,
@@ -39,13 +36,15 @@ export class DisconnectedStudentController {
     );
   }
 
-  @SwaggerSafeGet({ path: ':id', type: DisconnectedStudent })
+  @Get(':studentId')
+  @ApiOkResponse({ type: DisconnectedStudent })
   @Can(Permissions.Read)
-  public findOne(@Param('id') id: string) {
-    return this.disconnectedStudentService.findOne(+id);
+  public findOne(@Param('studentId') studentId: string) {
+    return this.disconnectedStudentService.findOne(+studentId);
   }
 
-  @SwaggerSafePost({ path: ':studentId', type: DisconnectedStudent })
+  @Post(':studentId')
+  @ApiCreatedResponse({ type: DisconnectedStudent })
   @Can(Permissions.Create)
   public disconnectStudent(
     @Param('studentId') studentId: string,

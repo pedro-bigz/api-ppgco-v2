@@ -2,7 +2,7 @@ import { z } from 'zod';
 import { isValid, toIsoString } from 'src/utils';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { updateMilestoneDocumentSchema } from 'src/milestone-document';
-import { customCreateZodDto } from 'src/common';
+import { customCreateZodDto } from 'src/core';
 
 export const updateMilestoneSchema = z.object({
   project_id: z.number(),

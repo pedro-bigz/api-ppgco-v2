@@ -1,108 +1,64 @@
 import { Logger, Module } from '@nestjs/common';
-import { ConfigModule } from '@nestjs/config';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 import { SequelizeModule } from '@nestjs/sequelize';
 import { JwtModule } from '@nestjs/jwt';
-import { SequelizeConfig } from 'src/config';
 import { AuthService, AuthController, AuthModule } from './auth';
-import { User, UserModule } from './user';
+import { UserModule } from './user';
 import { CrudGeneratorModule, crudGeneratorCommands } from './crud-generator';
-import { StudentModule, Student, VStudent } from './student';
-import { MilestoneModule, Milestone, VMilestone } from './milestone';
-import {
-  MilestoneDocumentModule,
-  MilestoneDocument,
-} from './milestone-document';
-import { ProjectModule, Project } from './project';
-import { AdvisorModule, Advisor, VAdvisor } from './advisor';
-import { ResearchLineModule, ResearchLine } from './research-line';
-import {
-  DisconnectedStudentModule,
-  DisconnectedStudent,
-} from './disconnected-student';
-import { MilestoneHistoryModule, MilestoneHistory } from './milestone-history';
-import { PublicationModule, Publication, VPublication } from './publication';
-import {
-  ProjectHasCoadvisorModule,
-  ProjectHasCoadvisor,
-} from './project-has-coadvisor';
-import { RolesModule, Role } from './roles';
-import { UserHasRolesModule, UserHasRole } from './user-has-roles';
-import {
-  RoleHasPermissionsModule,
-  RoleHasPermission,
-} from './role-has-permissions';
-import { PermissionsModule, Permission } from './permissions';
-import { MediaModule, Media } from './media';
+import { StudentModule } from './student';
+import { MilestoneModule } from './milestone';
+import { MilestoneDocumentModule } from './milestone-document';
+import { ProjectModule } from './project';
+import { AdvisorModule } from './advisor';
+import { ResearchLineModule } from './research-line';
+import { DisconnectedStudentModule } from './disconnected-student';
+import { MilestoneHistoryModule } from './milestone-history';
+import { PublicationModule } from './publication';
+import { ProjectHasCoadvisorModule } from './project-has-coadvisor';
+import { RolesModule } from './roles';
+import { UserHasRolesModule } from './user-has-roles';
+import { RoleHasPermissionsModule } from './role-has-permissions';
+import { PermissionsModule } from './permissions';
+import { MediaModule } from './media';
 import { MailerModule } from './mailer';
-import { Activation, ActivationsModule } from './activations';
+import { ActivationsModule } from './activations';
 import { EmailVerificationModule } from './email-verification';
-import { CoursesModule, Course } from './courses';
-import { SubjectsModule, Subject, VSubject } from './subjects';
-import { SystemApliancesModule, SystemApliance } from './system-apliances';
-import {
-  UserHasPermissionsModule,
-  UserHasPermission,
-} from './user-has-permissions';
-import { DocumentsModule, Document } from './documents';
-import {
-  MilestoneSituationModule,
-  MilestoneSituation,
-} from './milestone-situation';
+import { CoursesModule } from './courses';
+import { SubjectsModule } from './subjects';
+import { SystemApliancesModule } from './system-apliances';
+import { UserHasPermissionsModule } from './user-has-permissions';
+import { DocumentsModule } from './documents';
+import { MilestoneSituationModule } from './milestone-situation';
 import { DefaultMilestonesModule } from './default-milestones/default-milestones.module';
-import {
-  NotificationsModule,
-  Notification,
-  NotificationUsers,
-} from './notifications';
-import {
-  PublicationCoauthorsModule,
-  PublicationCoauthor,
-} from './publication-coauthors';
+import { NotificationsModule } from './notifications';
+import { PublicationCoauthorsModule } from './publication-coauthors';
+import { UsersPasswordResetModule } from './users-password-reset';
+import { CoversModule } from './covers/covers.module';
+import { Dialect } from 'sequelize';
+import { DB } from './app.constants';
+import { isProduction } from './utils';
+import { entities } from './app.entities';
 // {IMPORTS} Don't delete me, I'm used for automatic code generation
-
-const orm = {
-  tables: [
-    User,
-    Milestone,
-    MilestoneDocument,
-    Project,
-    Publication,
-    Student,
-    Advisor,
-    ResearchLine,
-    DisconnectedStudent,
-    MilestoneHistory,
-    ProjectHasCoadvisor,
-    Role,
-    UserHasRole,
-    UserHasPermission,
-    RoleHasPermission,
-    Permission,
-    Media,
-    Activation,
-    Course,
-    Subject,
-    SystemApliance,
-    Document,
-    MilestoneSituation,
-    Notification,
-    NotificationUsers,
-    PublicationCoauthor,
-    // {MODELS} Don't delete me, I'm used for automatic code generation
-  ],
-  views: [VMilestone, VSubject, VPublication, VStudent, VAdvisor],
-};
-
-console.log({ orm });
 
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
-    SequelizeModule.forRoot(
-      SequelizeConfig.configure({
-        models: [...orm.tables, ...orm.views],
+    SequelizeModule.forRootAsync({
+      imports: [ConfigModule],
+      useFactory: (configService: ConfigService) => ({
+        dialect: configService.get<Dialect>(DB.CONNECTION),
+        host: configService.get<string>(DB.HOST),
+        port: configService.get<number>(DB.PORT),
+        username: configService.get<string>(DB.USERNAME),
+        password: configService.get<string>(DB.PASSWORD),
+        database: configService.get<string>(DB.DATABASE),
+        autoLoadModels: true,
+        synchronize: false,
+        ssl: isProduction(),
+        models: [...entities.tables, ...entities.views],
       }),
-    ),
+      inject: [ConfigService],
+    }),
     JwtModule.register({
       global: true,
       secret: process.env.JWT_SECRET_KEY,
@@ -137,6 +93,8 @@ console.log({ orm });
     DefaultMilestonesModule,
     NotificationsModule,
     PublicationCoauthorsModule,
+    UsersPasswordResetModule,
+    CoversModule,
     // {MODULE} Don't delete me, I'm used for automatic code generation
   ],
   controllers: [AuthController],

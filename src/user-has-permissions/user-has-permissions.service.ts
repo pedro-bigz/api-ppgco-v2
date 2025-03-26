@@ -5,7 +5,7 @@ import {
   CreateUserHasPermissionsDto,
   UpdateUserHasPermissionsDto,
 } from './dto';
-import { CommonListing, CommonService, OrderDto, Query } from 'src/common';
+import { CommonListing, CommonService, OrderDto, Query } from 'src/core';
 
 @Injectable()
 export class UserHasPermissionsService extends CommonService<

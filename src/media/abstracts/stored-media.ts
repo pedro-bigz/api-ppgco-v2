@@ -66,24 +66,6 @@ export class StoredMedia extends Model {
     return this.getDisk().deleteFile(this.getFilename(), this.getPassword());
   }
 
-  static async fromMulterFile(file: Express.Multer.File, model: HasMedia) {
-    const media = new Media();
-
-    const storedFile = await media.storageAttempt(file);
-
-    media.model_type = model.getModelName();
-    media.model_id = model.getModelPrimaryKey();
-    media.collection_name = file.fieldname;
-    media.name = file.originalname;
-    media.mime_type = file.mimetype;
-    media.size = file.size;
-    media.order_column = 1;
-    media.disk = STORAGE_DISK;
-    media.file_name = storedFile.path + storedFile.extension;
-
-    return media.save();
-  }
-
   public safeDestroy() {
     this.destroyRemoteMedia();
     this.destroy();

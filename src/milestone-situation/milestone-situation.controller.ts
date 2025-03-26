@@ -1,16 +1,17 @@
-import { Body, Query, Param } from '@nestjs/common';
-import { OrderDto } from 'src/common';
-import { SwaggerSafeController, SwaggerSafeGet } from 'src/common';
+import { Query, Param, Get, Controller } from '@nestjs/common';
+import { OrderDto } from 'src/core';
 import { MilestoneSituationService } from './milestone-situation.service';
 import { MilestoneSituation } from './entities';
+import { ApiOkResponse } from '@nestjs/swagger';
 
-@SwaggerSafeController('milestone-situation')
+@Controller('milestone-situation')
 export class MilestoneSituationController {
   public constructor(
     private readonly milestoneSituationService: MilestoneSituationService,
   ) {}
 
-  @SwaggerSafeGet({ type: MilestoneSituation })
+  @Get()
+  @ApiOkResponse({ type: MilestoneSituation })
   public findAll(
     @Query('page') page: string,
     @Query('perPage') perPage: string,
@@ -27,7 +28,8 @@ export class MilestoneSituationController {
     );
   }
 
-  @SwaggerSafeGet({ path: ':id', type: MilestoneSituation })
+  @Get(':id')
+  @ApiOkResponse({ type: MilestoneSituation })
   public findOne(@Param('id') id: string) {
     return this.milestoneSituationService.findOne(+id);
   }

@@ -7,7 +7,8 @@ import {
   BeforeSave,
 } from 'sequelize-typescript';
 import { generateUUID } from 'src/utils';
-import { StoredMedia } from '../abstracts';
+import { HasMedia, StoredMedia } from '../abstracts';
+import { STORAGE_DISK } from '../media.constants';
 
 export interface MediaInputData {
   name: string;
@@ -65,5 +66,26 @@ export class Media extends StoredMedia {
   @BeforeCreate
   static beforeCreateTreatment(instance: Media) {
     instance.uuid = generateUUID();
+  }
+
+  static async fromMulterFile(
+    file: Express.Multer.File,
+    model: HasMedia,
+  ): Promise<Media> {
+    const media = new Media();
+
+    const storedFile = await media.storageAttempt(file);
+
+    media.model_type = model.getModelName();
+    media.model_id = model.getModelPrimaryKey();
+    media.collection_name = file.fieldname;
+    media.name = file.originalname;
+    media.mime_type = file.mimetype;
+    media.size = file.size;
+    media.order_column = 1;
+    media.disk = STORAGE_DISK;
+    media.file_name = storedFile.path + storedFile.extension;
+
+    return media.save();
   }
 }

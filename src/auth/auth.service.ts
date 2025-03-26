@@ -11,6 +11,7 @@ import _pick from 'lodash/pick';
 
 import { Permission, PermissionsService } from 'src/permissions';
 import { User, UserService } from 'src/user';
+import { UsersPasswordResetService } from 'src/users-password-reset';
 
 type TokenType = {
   _id: number;
@@ -32,7 +33,7 @@ export class AuthService {
     private readonly jwtService: JwtService,
     private readonly configService: ConfigService,
     private readonly permissionService: PermissionsService,
-  ) {}
+  ) { }
 
   public async signIn(email: string, password: string): Promise<any> {
     const user = (await this.usersService.findByEmail(email)) as User & {
@@ -119,13 +120,14 @@ export class AuthService {
 
   public async refresh(requestBody: any) {
     const token = requestBody.refreshToken;
+
     const secretKeys = {
       access: this.configService.get<string>('JWT_SECRET_KEY'),
       refresh: this.configService.get<string>('JWT_REFRESH_SECRET_KEY'),
     };
 
     const payload = await this.jwtService.verifyAsync<TokenType>(token, {
-      secret: this.configService.get<string>('JWT_REFRESH_SECRET_KEY'),
+      secret: secretKeys.refresh,
     });
 
     const newPayload = _pick(payload, ['_id', 'email', 'name']);
@@ -136,12 +138,12 @@ export class AuthService {
 
     const accessToken = await this.jwtService.signAsync(newPayload, {
       expiresIn: '4h',
-      secret: this.configService.get<string>('JWT_SECRET_KEY'),
+      secret: secretKeys.access,
     });
 
     const refreshToken = await this.jwtService.signAsync(newPayload, {
       expiresIn: '4h',
-      secret: this.configService.get<string>('JWT_SECRET_KEY'),
+      secret: secretKeys.access,
     });
 
     return { auth: { accessToken, refreshToken } };

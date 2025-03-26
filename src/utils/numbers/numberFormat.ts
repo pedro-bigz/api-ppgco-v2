@@ -6,5 +6,5 @@ export const numberFormat = (num: number, options = {}, locale = 'pt-BR') => {
   return new Intl.NumberFormat(locale, {
     ...defaultOptions,
     ...options,
-  }).format(num);
+  } as Intl.NumberFormatOptions).format(num);
 };

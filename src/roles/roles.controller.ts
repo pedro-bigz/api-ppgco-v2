@@ -1,17 +1,18 @@
-import { Query } from '@nestjs/common';
-import { OrderDto } from 'src/common';
-import { SwaggerSafeController, SwaggerSafeGet } from 'src/common';
+import { Controller, Get, Query } from '@nestjs/common';
+import { OrderDto } from 'src/core';
 import { Can } from 'src/permissions';
 import { RolesService } from './roles.service';
 import { Permissions } from './roles.enum';
 import { PaginatedRoleDto } from './dto';
+import { ApiOkResponse } from '@nestjs/swagger';
 
-@SwaggerSafeController('roles')
+@Controller('roles')
 export class RolesController {
   public constructor(private rolesService: RolesService) {}
 
-  @SwaggerSafeGet({ type: PaginatedRoleDto })
+  @Get()
   @Can(Permissions.List)
+  @ApiOkResponse({ type: PaginatedRoleDto })
   public findAll(
     @Query('page') page: string,
     @Query('perPage') perPage: string,

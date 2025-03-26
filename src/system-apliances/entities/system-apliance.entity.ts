@@ -1,13 +1,8 @@
-import {
-  Column,
-  CreatedAt,
-  Model,
-  Table,
-  UpdatedAt,
-} from 'sequelize-typescript';
+import { Column, CreatedAt, Table, UpdatedAt } from 'sequelize-typescript';
+import { ModelWithMedia } from 'src/media';
 
 @Table({ tableName: 'system_apliances' })
-export class SystemApliance extends Model {
+export class SystemApliance extends ModelWithMedia {
   @Column({ primaryKey: true, autoIncrement: true })
   id: number;
 
@@ -22,4 +17,8 @@ export class SystemApliance extends Model {
 
   @UpdatedAt
   updated_at: Date;
+
+  public registerMediaCollections(): void {
+    this.mediaCollection.addMediaCollection('covers');
+  }
 }

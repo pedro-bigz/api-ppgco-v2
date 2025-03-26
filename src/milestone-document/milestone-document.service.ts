@@ -1,5 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { CommonService, CreationAdditionalData } from 'src/common';
+import { CommonService, CreationAdditionalData } from 'src/core';
 import { MILESTONE_DOCUMENT_REPOSITORY } from './milestone-document.constants';
 import { MilestoneDocument } from './entities';
 import {
