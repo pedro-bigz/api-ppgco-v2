@@ -6,3 +6,4 @@ export * from './randomString';
 export * from './convertTabsInSpaces';
 export * from './formatFones';
 export * from './formatCourseName';
+export * from './makeTabs';

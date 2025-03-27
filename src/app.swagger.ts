@@ -10,41 +10,51 @@ type AppSwaggerDataType = {
 };
 
 export class AppSwagger {
-  constructor(private data: AppSwaggerDataType) {
-    patchNestJsSwagger();
-  }
+  private document: OpenAPIObject;
 
-  static create(data: AppSwaggerDataType) {
+  constructor(private data: AppSwaggerDataType) {}
+
+  public static create(data: AppSwaggerDataType) {
     return new AppSwagger(data);
   }
 
-  build() {
+  public build() {
+    patchNestJsSwagger();
     return new DocumentBuilder()
       .setTitle(this.data.title)
       .setDescription(this.data.description)
       .setVersion(this.data.version)
       .addBearerAuth()
+      .addSecurityRequirements('bearer')
       .build();
   }
 
-  createDocument(app: INestApplication<any>) {
-    const document = SwaggerModule.createDocument(app, this.build());
+  public createDocument(app: INestApplication<any>) {
+    this.document = SwaggerModule.createDocument(app, this.build());
+    return this;
+  }
 
-    Object.values((document as OpenAPIObject).paths).forEach((path: any) => {
+  public configurePublicRoutes() {
+    Object.values(this.document.paths).forEach((path: any) => {
       Object.values(path).forEach((method: any) => {
-        if (
-          Array.isArray(method.security) &&
-          method.security.includes(IS_PUBLIC_KEY)
-        ) {
-          method.security = undefined;
+        if (method.security?.includes?.(IS_PUBLIC_KEY)) {
+          method.security = [];
         }
       });
     });
 
-    return document;
+    return this;
   }
 
-  configure(app: INestApplication<any>) {
-    SwaggerModule.setup('swagger', app, this.createDocument(app));
+  public getDocument() {
+    return this.document;
+  }
+
+  public configure(app: INestApplication<any>) {
+    const document = this.createDocument(app)
+      .configurePublicRoutes()
+      .getDocument();
+
+    SwaggerModule.setup('swagger', app, document);
   }
 }

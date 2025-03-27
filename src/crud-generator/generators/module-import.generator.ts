@@ -8,6 +8,8 @@ import {
   ShellHelper,
   ZodHelper,
 } from '../helpers';
+import { makeTabs } from 'src/utils';
+import { generationMarks } from './generator.constants';
 
 @Injectable()
 export class ModuleImportGenerator extends BaseGenerator {
@@ -36,34 +38,54 @@ export class ModuleImportGenerator extends BaseGenerator {
     this.modelClassName = this.nameHelper.resolveModelClassName();
     this.moduleClassName = this.nameHelper.resolveModuleClassName();
 
-    return this.setIsForced(isForced).updateAppModuleFile();
+    return this.setIsForced(isForced)
+      .updateAppModuleFile()
+      .updateAppEntityFile();
+  }
+
+  protected import({ imports, from }: Record<'imports' | 'from', string>) {
+    return `import { ${imports} } from 'src/${from}';`;
   }
 
   protected updateAppModuleFile() {
-    const generationMarks = {
-      imports: `// {IMPORTS} Don't delete me, I'm used for automatic code generation`,
-      module: `// {MODULE} Don't delete me, I'm used for automatic code generation`,
-      model: `// {MODELS} Don't delete me, I'm used for automatic code generation`,
-    };
     const toReplace = {
-      imports: `import { ${this.moduleClassName}, ${this.modelClassName} } from './${this.modulePath}';`,
+      moduleIimports: this.import({
+        imports: this.moduleClassName,
+        from: this.modulePath,
+      }),
       module: this.moduleClassName + ',',
-      model: this.modelClassName + ',',
     };
-    const space = String.fromCharCode(0x20);
-    const tab = space + space;
     this.fileHelper.replaceContent(paths.app.module, [
       {
-        find: generationMarks.imports,
-        toReplace: toReplace.imports + '\n' + generationMarks.imports,
+        find: generationMarks.moduleIimports,
+        toReplace:
+          toReplace.moduleIimports + '\n' + generationMarks.moduleIimports,
       },
       {
         find: generationMarks.module,
-        toReplace: toReplace.module + '\n' + tab + tab + generationMarks.module,
+        toReplace:
+          toReplace.module + '\n' + makeTabs(2) + generationMarks.module,
+      },
+    ]);
+    return this;
+  }
+
+  protected updateAppEntityFile() {
+    const toReplace = {
+      modelImports: this.import({
+        imports: this.moduleClassName,
+        from: `${this.modulePath}/entities`,
+      }),
+      model: this.modelClassName + ',',
+    };
+    this.fileHelper.replaceContent(paths.app.modelList, [
+      {
+        find: generationMarks.modelImports,
+        toReplace: toReplace.modelImports + '\n' + generationMarks.modelImports,
       },
       {
         find: generationMarks.model,
-        toReplace: toReplace.model + '\n' + tab + tab + generationMarks.model,
+        toReplace: toReplace.model + '\n' + makeTabs(2) + generationMarks.model,
       },
     ]);
     return this;

@@ -23,7 +23,8 @@ import { User } from 'src/user/entities';
 import { UserHasPermission } from 'src/user-has-permissions/entities';
 import { UserHasRole } from 'src/user-has-roles/entities';
 import { UsersPasswordReset } from 'src/users-password-reset/entities';
-import { Document } from 'src/documents';
+import { Document } from 'src/documents/entities';
+// {MODEL_IMPORT} Don't delete me, I'm used for automatic code generation
 
 export const entities = {
   tables: [

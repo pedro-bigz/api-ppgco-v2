@@ -38,7 +38,7 @@ import { Dialect } from 'sequelize';
 import { DB } from './app.constants';
 import { isProduction } from './utils';
 import { entities } from './app.entities';
-// {IMPORTS} Don't delete me, I'm used for automatic code generation
+// {MODULE_IMPORT} Don't delete me, I'm used for automatic code generation
 
 @Module({
   imports: [

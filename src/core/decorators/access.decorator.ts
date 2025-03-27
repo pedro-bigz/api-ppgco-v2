@@ -11,7 +11,6 @@ export const Public = () =>
     SetMetadata(IS_PUBLIC_KEY, true),
     SetMetadata('swagger/apiSecurity', [IS_PUBLIC_KEY]),
   );
-export const Private = () => SetMetadata(IS_PUBLIC_KEY, false);
 
 export const BearerToken = createParamDecorator(
   (data: unknown, ctx: ExecutionContext) => {

@@ -7,6 +7,7 @@ export * from './types';
 export * from './pipes';
 export * from './filters';
 export * from './database';
+export * from './constants';
 export * from './factories';
 export * from './decorators';
 export * from './common.pipes';

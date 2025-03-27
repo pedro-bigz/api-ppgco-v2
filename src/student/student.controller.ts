@@ -148,7 +148,6 @@ export class StudentController {
   public destroy(@Param('id') id: string) {
     const deleteds = this.studentService.remove(+id);
     return {
-      status: 'success',
       message: 'Student deleted successfully',
       deleteds,
     };

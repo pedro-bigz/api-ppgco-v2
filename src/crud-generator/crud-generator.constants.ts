@@ -4,6 +4,7 @@ export const paths = {
     root: 'src',
     dto: 'dto',
     model: 'entities',
+    modelList: 'app.entities.ts',
     module: 'app.module.ts',
     subfolders: {
       models: 'entities',
